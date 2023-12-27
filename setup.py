@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="eXAlu",
-    version="0.2",
+    version="0.3",
     author="Zitong He & Liliana Florea",
     author_email="hezt@jhu.edu",
     description="Deep learning based Alu exonization event detecter",
