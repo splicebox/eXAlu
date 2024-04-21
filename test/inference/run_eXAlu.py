@@ -3,17 +3,11 @@ from exalu.data_preprocess.curate_data import add_context
 import pybedtools
 import sys
 import argparse
-import textwrap
 import os
 
 
 def get_arguments():
     parser = argparse.ArgumentParser()
-    # class SubCommandCommonParser(argparse.ArgumentParser):
-    #     def __init__(self, *args, **kwargs):
-    #         super(SubCommandCommonParser, self).__init__(*args, **kwargs)
-    #         # common options for each sub command
-    #         # self.add_
 
     subparsers = parser.add_subparsers(
         help='select bed or fasta input mode', dest='input_mode')

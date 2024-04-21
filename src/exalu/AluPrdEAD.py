@@ -1,10 +1,6 @@
-from six import with_metaclass
 import torch
-import numpy as np
 import os
-import pandas as pd
-from torch.utils import data
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 from copy import deepcopy
