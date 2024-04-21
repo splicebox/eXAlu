@@ -24,7 +24,6 @@ def run_ead(strand, model_name='cnet',
     # only run mode 6 requires infer_bed_file
     since = time.time()
     print('working dir', work_dir)
-    print('test_chrs', test_chrs)
     # save path config
     if run_mode in [0, 1, 2, 4, 5, 6, 8]:
         # run_mode 0, 2 will use their own dataset/model
@@ -34,7 +33,6 @@ def run_ead(strand, model_name='cnet',
             max_seq_len = 350 + single_side_pad_len * 2
         else:
             max_seq_len = 0 # not support yet
-        print(infer_set)
         version_name = f'ead_v1.4t_{infer_set}'
         dataset_dst_dir = os.path.join(work_dir, f'dataset_pickles')
         dataset_save_file = os.path.join(dataset_dst_dir, f'{version_name}_runmode_{run_mode}_padding_{context_mode}_{single_side_pad_len}.pickle') # no dc here
@@ -62,7 +60,7 @@ def run_ead(strand, model_name='cnet',
             with open(dataset_save_file, 'rb') as fh:
                 datasets = pickle.load(fh)
         else:
-            print('dataset pickle file DOES NOT exist')
+            print('dataset pickle file DOES NOT exist, creating new one...')
             curate_data(infer_set=infer_set, strand=strand, mode=context_mode, single_side_pad_len=single_side_pad_len, work_dir=work_dir, data_dir=data_dir)
             # datasets = load_data_ead_alu_chr_woinfer(alu_file=pos_alu_fa_file, neg_file=neg_alu_fa)
             datasets = load_data_ead_alu_chr_train_unique_duplicate(alu_file=pos_alu_fa_file, neg_file=neg_alu_fa, duplicate_times=10, test_chrs=test_chrs, max_seq_len=max_seq_len)
@@ -83,7 +81,7 @@ def run_ead(strand, model_name='cnet',
             with open(dataset_save_file, 'rb') as fh:
                 datasets = pickle.load(fh)
         else:
-            print('dataset pickle file DOES NOT exist')
+            print('dataset pickle file DOES NOT exist, creating new one...')
             datasets = load_data_ead_alu_chr_inferonly(strand, None, work_dir, infer_set, max_seq_len=max_seq_len)
             os.makedirs(dataset_dst_dir, exist_ok='True')
             with open(dataset_save_file, 'wb') as fh:
@@ -113,7 +111,7 @@ def run_ead(strand, model_name='cnet',
             with open(dataset_save_file, 'rb') as fh:
                 datasets = pickle.load(fh)
         else:
-            print('dataset pickle file DOES NOT exist')
+            print('dataset pickle file DOES NOT exist, creating new one...')
             curate_data(infer_set=infer_set, strand=strand, mode=context_mode, single_side_pad_len=single_side_pad_len, work_dir=work_dir, data_dir=data_dir)
             os.makedirs(dataset_dst_dir, exist_ok='True')
             datasets = load_data_ead_alu_chr_withinfer2(
@@ -169,7 +167,6 @@ def run_ead(strand, model_name='cnet',
             with open(dataset_save_file, 'rb') as fh:
                 datasets = pickle.load(fh)
         else:
-            print('dataset pickle file DOES NOT exist')
             if run_mode == 4:
                 datasets = load_data_ead_simpleinfer(infer_file, max_seq_len=max_seq_len)
             elif run_mode == 5:
@@ -200,7 +197,6 @@ def run_ead(strand, model_name='cnet',
             with open(dataset_save_file, 'wb') as fh:
                 pickle.dump(datasets, fh)
         alu_prd = AluPrdEAD(datasets, model_name=model_name, run_mode=run_mode)
-        print(model_wts_name)
         if torch.cuda.is_available():
             model_wts = torch.load(model_wts_name)
         else:
