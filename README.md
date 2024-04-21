@@ -83,7 +83,7 @@ Below is an example showing how to perform inference on a small *Alu* bed file u
 ```
 conda activate alu_env
 cd test/inference
-python run_eXAlu.py bed -b example_alu.bed -r ~/data_lflorea1/shared/genomes/hg38/hg38c.fa -m ../models/model_weights.pt -o ./demo_out
+python run_eXAlu.py bed -b example_alu.bed -r REF_GENOME_FILE -m ../models/model_weights.pt -o ./demo_out
 python run_eXAlu.py fasta -f example_alu.fa -m ../models/model_weights.pt -o ./demo_out
 ```
 
@@ -140,7 +140,7 @@ Below is an example that shows how to plot the mutagenesis graphs giving bed or 
 ```
 conda activate alu_env
 cd test/analysis/mutagenesis
-python mutagenesis.py bed -b ./example_alu.bed -r ~/data_lflorea1/shared/genomes/hg38/hg38c.fa -m ../../models/model_weights.pt -o ./demo_out --yaxis fixed
+python mutagenesis.py bed -b ./example_alu.bed -r REF_GENOME_FILE -m ../../models/model_weights.pt -o ./demo_out --yaxis fixed
 python mutagenesis.py fasta -f ./example_alu.fa -m ../../models/model_weights.pt -o ./demo_out --yaxis adaptive
 ```
 ## Support
