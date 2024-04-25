@@ -172,6 +172,8 @@ optional arguments:
 ```-->
 The output images are created in OUTPUT_DIR/imgs/, and the text files with the score change data in OUTPUT_DIR/tables/.
 
+<!--NOTE that, when specified, the '-alu' option will mark the endpoints of the *Alu* given the coordinates from the ALU_BED_FILE when the input is 'bed' type, and the endpoints of the 350 bp flanking regions when the input is 'fasta' type.-->
+
 #### Example
 Below is an example showing how to plot the mutagenesis graphs given a BED or FASTA file input:
 ```
