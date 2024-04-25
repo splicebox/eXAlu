@@ -60,23 +60,28 @@ pip install -e .
 ### <a name="inference"></a> Inference
 The inference module takes as input either a BED file containing the genomic *Alu* intervals, or a FASTA file containing the *Alu* plus 350 bp context sequences and, for each element, it predicts the likelihood that it can become exonized.
 ```
-python run_eXAlu.py {bed,fasta} ...
+usage: run_eXAlu.py [-h] {bed,fasta} ...
 
 positional arguments:
   {bed,fasta}  select bed or fasta input mode
     bed        infer with bed file
     fasta      infer with fasta file
+
+optional arguments:
+  -h, --help   show this help message and exit
 ```
 
 To input a BED file:
 ```
-python run_eXAlu.py bed -b ALU_BED_FILE -r REF_GENOME_FILE -m MODEL_WEIGHTS_FILE -o OUTPUT_DIR
+usage: run_eXAlu.py bed [-h] -b ALU_BED_FILE -r REF_GENOME_FILE -m MODEL_WEIGHTS_FILE -o OUTPUT_DIR
 
 optional arguments:
-  -b ALU_BED_FILE       the input *Alu* bed file
-  -r REF_GENOME_FILE    the path to the reference genome file (which should be hg38c.fa)
-  -m MODEL_WEIGHTS_FILE the trained model weights file
-  -o OUTPUT_DIR         the directory containing temporary files and final output file (default ./out)
+  -h, --help            show this help message and exit
+  -b ALU_BED_FILE       the input Alu bed file
+  -r REF_GENOME_FILE    the reference genome file
+  -m MODEL_WEIGHTS_FILE
+                        the trained model weights file
+  -o OUTPUT_DIR         the directory contains temp files and final output file
 ```
 
 To input a FASTA file:
@@ -122,7 +127,7 @@ python mutagenesis.py bed [-h] -b ALU_BED_FILE -r REF_GENOME_FILE -m MODEL_WEIGH
 optional arguments:
   -h, --help            show this help message and exit
   -b ALU_BED_FILE       the input *Alu* bed file
-  -r REF_GENOME_FILE    the reference genome file, it should be hg38c.fa
+  -r REF_GENOME_FILE    the reference genome file
   -m MODEL_WEIGHTS_FILE
                         the trained model weights file
   -o OUTPUT_DIR         the directory contains temp files and final output file

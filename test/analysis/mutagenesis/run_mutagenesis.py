@@ -380,7 +380,7 @@ def get_arguments():
     parser_bed.add_argument('-b', metavar='ALU_BED_FILE',
                             type=str, required=True, help='the input Alu bed file')
     parser_bed.add_argument('-r', metavar='REF_GENOME_FILE', type=str,
-                            required=True, help='the reference genome file, it should be hg38c.fa')
+                            required=True, help='the reference genome file')
     parser_bed.add_argument('-m', metavar='MODEL_WEIGHTS_FILE',
                             type=str, required=True, help='the trained model weights file')
     parser_bed.add_argument('-o', metavar='OUTPUT_DIR', type=str, required=True,
