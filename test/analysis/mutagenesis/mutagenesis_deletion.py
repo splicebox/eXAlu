@@ -1,113 +1,13 @@
-# this file is for loading SNP mutated seqs
-import gzip
-import csv
 import re
 import os
 from collections import defaultdict
-import pybedtools
 from exalu.data_preprocess.read_tissue_alu import add_context, split
 from exalu.run_model import run_ead
 import matplotlib.pyplot as plt
 import numpy as np
 import pickle
+from utils import gen_mutated_score_dict, read_fa
 
-
-def read_snp_per_seq(chr, start, end, snp_fh):
-    '''
-    snp vcf sample:
-    1       11012   rs544419019     C   G
-    '''
-    _chr = chr[3:]
-    snp_lst = []
-    start = int(start)
-    end = int(end)
-    for line in snp_fh:
-        if line[0] == '#':
-            continue
-        line_lst = line.rstrip().split('\t')
-        if line_lst[0] != _chr:
-            continue
-        loc = int(line_lst[1])
-        if start <= loc and loc <= end:
-            if len(line_lst[3]) != 1 or len(line_lst[4]) != 1:
-                # not single SNP
-                if ',' in line_lst[4]:
-                    continue
-            snp_lst.append((i for i in line_lst))
-        if loc > end:
-            break
-    return snp_lst
-
-def read_snp(bed_file, snp_file):
-    '''
-    TODO: this function is outdated!!! camparing it's old pair read_fa()
-    read bed file, output dict[key: each seq's id in bed, value: the seq's snps]
-    
-    bed example:
-    chr15	41297596	41297996	h38_mk_AluSx1_4_both_11_12_3	3	-
-    '''
-    # open snp file
-    if snp_file[-2:] == 'gz':
-        snp_fh = gzip.open(snp_file, 'rt')
-    else:
-        snp_fh = open(snp_file, 'r')
-    # read bed file 
-    bed_fh = open(bed_file, 'r')
-    bed_reader = csv.reader(bed_fh, delimiter='\t')
-    seq_snp_dict = {}
-    for idx, row in enumerate(bed_reader):
-        seq_id = (row[0], row[1], row[2], row[3])
-        seq_snp_dict[seq_id] = read_snp_per_seq(seq_id[0], seq_id[1], seq_id[2], snp_fh)
-    bed_fh.close()
-    snp_fh.close()
-    return seq_snp_dict
-
-def read_fa(fa_file, genome, strand, bed_file=None):
-    '''
-    read bed file, output dict [key: each seq's id in bed, value: the seq's fa seq]
-    
-    fa example: 
-    >h38_mk_AluJb_2_both_19_20_3::chr11:3361721-3362121(+)
-    tacatgctcttaggagattaccagtga......
-    '''
-    if bed_file:
-        ref_fa = pybedtools.example_filename(genome)
-        bed = pybedtools.BedTool(bed_file)
-        bed.sequence(fi=ref_fa, fo=fa_file, name=True, s=strand)
-    seq_fa_dict = {}
-    with open(fa_file, 'r') as fa_fh:
-        while(id_line := fa_fh.readline().rstrip()):
-            id_from_fa = id_line.split('::')[-1]
-            # id_lst = re.split(r'\:|\-|\(|\)', id_from_fa)
-            if strand == True:
-                id_lst = re.split('[:()]', id_from_fa)
-                id_lst = [id_lst[0]] + id_lst[1].split('-') + [id_lst[2]]
-                _id = (id_lst[0], id_lst[1], id_lst[2], id_lst[3])
-            else:
-                id_lst = re.split('[:-]', id_from_fa)
-                _id = (id_lst[0], id_lst[1], id_lst[2])
-            assert(id_lst[0][0:3] == 'chr')
-            seq_line = fa_fh.readline().rstrip()
-            seq_fa_dict[_id] = (seq_line, id_line)
-    return seq_fa_dict
-
-def read_splice_sites(alu_bed_file, exon_bed_file):
-    # read splice sites base on exon file
-    alu_bed_fh = open(alu_bed_file, 'r')
-    exon_bed_fh = open(exon_bed_file, 'r')
-    alu_bed_reader = csv.reader(alu_bed_fh, delimiter='\t')
-    exon_bed_reader = csv.reader(exon_bed_fh, delimiter='\t')
-    splice_sites_dict = {}
-    for alu_row, exon_row in zip(alu_bed_reader, exon_bed_reader):
-        _id = (alu_row[0], alu_row[1], alu_row[2], alu_row[5])
-        if exon_row[-1] == '+':
-            exon_info = [(exon_row[1], 'acceptor'), (exon_row[2], 'donor')]
-        else:
-            exon_info = [(exon_row[1], 'donor'), (exon_row[2], 'acceptor')]
-        splice_sites_dict[_id] = exon_info
-    alu_bed_fh.close()
-    exon_bed_fh.close()
-    return splice_sites_dict
 
 def mutate_seq_per_seq_all(seq, ks):
     for k in ks:
@@ -345,7 +245,6 @@ def peak_detect_store(work_dir, ks):
             # id line: h38_mk_AluSq2_2_329_2_bothfix_0_0_NA::chr11:112229347-112229726(-)::378_A_T
             mutated_rslt[line_lst[2].split('::')[1]].append((line_lst[2].split('::')[-1], float(line_lst[0]))) # {id:(mutation, score)}
     # generate mutated score dict
-    # gen_mutated_score_dict(work_dir, baseline_rslt, mutated_rslt)
     gen_mutated_score_dict(work_dir, baseline_rslt, mutated_rslt, os.path.join(work_dir, 'tables'))
     # peak detection
     k_peak_dict = peak_detect(work_dir, ks)

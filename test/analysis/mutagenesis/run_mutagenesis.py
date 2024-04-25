@@ -85,8 +85,6 @@ def get_arguments():
 
 if __name__ == "__main__":
     args = get_arguments()
-    print(args.b)
-    exit()
     if args.input_mode == 'bed':
         if args.t == 'substitution':
             gen_saturation_mutagenesis_graphs_substitution(work_dir=args.o, genome=args.r, model_wts_name=args.m, alu_bed_file=args.b, plot_mode=args.yaxis, has_peaks=args.p)
