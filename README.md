@@ -19,7 +19,7 @@ This program is free software: you can redistribute it and/or modify it under th
     - [Mutagenesis mode (visualization)](#mutagenesis)
 - [Support](#support)
 
-### <a name="what-is-exalu"></a> What is eXAlu?
+## <a name="what-is-exalu"></a> What is eXAlu?
 eXAlu is a Convolutional Neural Network (CNN) model that predicts the likelihood of an *Alu* repeat to be exonized based on genomic sequences.
 
 *Alu* elements are ∼300 bp sequences belonging to an order of retrotransposons termed Short Interspersed Nuclear Elements (SINEs), found in the genomes of primates. The human genome contains more than one million copies, representing ~11% of the genome. While most *Alu* elements map to nonfunctional intergenic and intronic sequences, some become incorporated into genes. In particular, *Alu* *exonization*, in which an intronic *Alu* sequence is recruited into a gene transcript via splicing (see [figure](#transcript_alu)), can disrupt or create gene function, potentially leading to disease. 
@@ -34,7 +34,7 @@ The model takes as input a set of *Alu* elements surrounded by 350 bp sequence c
 
 This repository provides *inference* and *mutagenesis plotting* functions. The *inference* module implements the prediction function. The *mutagenesis* module produces graphs showing the difference in the model's score when mutating the input sequence, either single nucleotide changes or block deletions. Upon user request, graphs are annotated with peaks, which point to features important for recognition and the exonization process, such as splicing regulatory signals. Negative peaks mark changes in the local sequence context that reduce the probability of exonization, and positive peaks mark changes leading to an increased probability.  
 
-### <a name="installation"></a> Installation
+## <a name="installation"></a> Installation
 eXAlu is compatible with Linux (tested), Windows and MacOS. It requires Python 3.9+, CUDA 11.2+, and PyTorch 1.10+.
 
 We recommend users to install and use this tool in a [conda](https://www.anaconda.com/) environment. Please follow these steps to configure the proper environment:
@@ -56,7 +56,7 @@ conda install seaborn -c anaconda
 pip install -e .
 ```
 
-### <a name="usage"></a> Usage
+## <a name="usage"></a> Usage
 
 ### <a name="inference"></a> Inference
 The *inference* module takes as input either a BED file containing the genomic *Alu* intervals, or a FASTA file containing the *Alu* plus 350 bp context sequences and, for each element, it predicts the likelihood that it can become exonized.
@@ -119,6 +119,7 @@ The *mutagenesis* module generates plots showing the effects that sequence mutat
 <a name="mutagenesis_plot"></a>
 <p align="center"><a name="mutagenesis_plot"> </a><img title="Mutagenesis plot" src="images/mut_plot_deletion_chr1_3866243_3866547_-.png" width=95%></p>
 
+To generate a mutagenesis plot:
 ```
 usage: run_mutagenesis.py [-h] {bed,fasta} ...
 
@@ -182,7 +183,7 @@ python run_mutagenesis.py bed -t deletion -k 5,10,15 -b ./example_alu.bed -r REF
 python run_mutagenesis.py fasta -t deletion -k 1,6,11,16 -f ./example_alu.fa -m ../../models/model_weights.pt -o ./demo_out --yaxis fixed -p
 ```
 
-### <a name="support"></a> Support
+## <a name="support"></a> Support
 Contact: Zitong He, hezt@jhu.edu, or submit a GitHub [Issue](https://github.com/splicebox/eXAlu/issues).
 
 ## License information
