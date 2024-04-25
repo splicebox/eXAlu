@@ -286,7 +286,7 @@ def peak_detect_store(work_dir, ks):
     return k_peak_dict
 
 
-def draw_plot(work_dir, ks, plot_mode='fixed', strand=True, has_peaks=True, k_peak_dict=None, no_alu_boundries=False):
+def draw_plot(work_dir, ks, plot_mode='fixed', strand=True, has_peaks=True, k_peak_dict=None, no_alu_boundaries=False):
     # has_peaks controls if we draw peaks range on the satruation mutagenesis imgaes
     # if yes, then draw 
     # plot mode fixed means: fix the range of y-axis from -0.3 to 0.3
@@ -312,8 +312,8 @@ def draw_plot(work_dir, ks, plot_mode='fixed', strand=True, has_peaks=True, k_pe
         plt.figure(figsize=(40, 4.8), dpi=150)
         plt.hlines([0], xmin=0, xmax=alu_len + 1, colors=['gray'], linestyles='dashed')
         # plt.vlines([0], ymin=-1, ymax=1, colors=['gray'], linestyles='dashed')
-        # alu boundry lines
-        if not no_alu_boundries:
+        # alu boundary lines
+        if not no_alu_boundaries:
             plt.axvline(25, color='gray', linestyle='dashed') 
             plt.axvline(alu_len - 25, color='gray', linestyle='dashed')
         if strand:
@@ -354,7 +354,7 @@ def draw_plot(work_dir, ks, plot_mode='fixed', strand=True, has_peaks=True, k_pe
         plt.close()
 
 
-def gen_saturation_mutagenesis_graphs_deletion(work_dir, model_wts_name, ks, genome=None, alu_bed_file=None, alu_fa_file=None, plot_mode='fixed', has_peaks=True, no_alu_boundries=False):
+def gen_saturation_mutagenesis_graphs_deletion(work_dir, model_wts_name, ks, genome=None, alu_bed_file=None, alu_fa_file=None, plot_mode='fixed', has_peaks=True, no_alu_boundaries=False):
     os.makedirs(work_dir, exist_ok=True)
     if alu_bed_file:
         src_bed = alu_bed_file
@@ -393,7 +393,7 @@ def gen_saturation_mutagenesis_graphs_deletion(work_dir, model_wts_name, ks, gen
     # peak detection
     if has_peaks:
         k_peak_dict=peak_detect_store(work_dir, ks)
-        draw_plot(work_dir=work_dir, ks=ks, plot_mode=plot_mode, strand=True, has_peaks=has_peaks, k_peak_dict=k_peak_dict, no_alu_boundries=no_alu_boundries)
+        draw_plot(work_dir=work_dir, ks=ks, plot_mode=plot_mode, strand=True, has_peaks=has_peaks, k_peak_dict=k_peak_dict, no_alu_boundaries=no_alu_boundaries)
     else:
-        draw_plot(work_dir=work_dir, ks=ks, plot_mode=plot_mode, strand=True, has_peaks=has_peaks, no_alu_boundries=no_alu_boundries)
+        draw_plot(work_dir=work_dir, ks=ks, plot_mode=plot_mode, strand=True, has_peaks=has_peaks, no_alu_boundaries=no_alu_boundaries)
 

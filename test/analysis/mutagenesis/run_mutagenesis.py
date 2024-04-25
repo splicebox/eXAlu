@@ -52,8 +52,8 @@ def get_arguments():
                             help='the directory contains temp files and final output file')
     parser_bed.add_argument('--yaxis', metavar='Y_AXIS_MODE', type=str, default='fixed', 
                             help='limits of y-axis is fixed to +/-0.3 or adaptive, the default is fixed mode')
-    parser_bed.add_argument('--no-alu-boundries', action='store_true',
-                            help='Do not draw Alu boundries (grey vertical dashed lines) on plot')
+    parser_bed.add_argument('--no-alu-boundaries', action='store_true',
+                            help='Do not draw Alu boundaries (grey vertical dashed lines) on plot')
 
     parser_fa = subparsers.add_parser('fasta', help='infer with fasta file')
     parser_fa.add_argument('-t', metavar='TYPE', choices=['deletion', 'substitution'], required=True,
@@ -70,8 +70,8 @@ def get_arguments():
                             help='the directory contains temp files and final output file, default ./out')
     parser_fa.add_argument('--yaxis', metavar='Y_AXIS_MODE', type=str, default='fixed', 
                             help='limits of y-axis is fixed to +/-0.3 or adaptive, the default is fixed mode')
-    parser_fa.add_argument('--no-alu-boundries', action='store_true',
-                            help='Do not draw Alu boundries (grey vertical dashed lines) on plot')
+    parser_fa.add_argument('--no-alu-boundaries', action='store_true',
+                            help='Do not draw Alu boundaries (grey vertical dashed lines) on plot')
     
     # Check if no arguments were provided
     if len(sys.argv) < 2:
@@ -91,12 +91,12 @@ if __name__ == "__main__":
     args = get_arguments()
     if args.input_mode == 'bed':
         if args.t == 'substitution':
-            gen_saturation_mutagenesis_graphs_substitution(work_dir=args.o, genome=args.r, model_wts_name=args.m, alu_bed_file=args.b, plot_mode=args.yaxis, has_peaks=args.p, no_alu_boundries=args.no_alu_boundries)
+            gen_saturation_mutagenesis_graphs_substitution(work_dir=args.o, genome=args.r, model_wts_name=args.m, alu_bed_file=args.b, plot_mode=args.yaxis, has_peaks=args.p, no_alu_boundaries=args.no_alu_boundaries)
         elif args.t == 'deletion':
-            gen_saturation_mutagenesis_graphs_deletion(work_dir=args.o, model_wts_name=args.m, ks=args.k, genome=args.r, alu_bed_file=args.b, plot_mode=args.yaxis, has_peaks=args.p, no_alu_boundries=args.no_alu_boundries)
+            gen_saturation_mutagenesis_graphs_deletion(work_dir=args.o, model_wts_name=args.m, ks=args.k, genome=args.r, alu_bed_file=args.b, plot_mode=args.yaxis, has_peaks=args.p, no_alu_boundaries=args.no_alu_boundaries)
 
     if args.input_mode == 'fasta':
         if args.t == 'substitution':
-            gen_saturation_mutagenesis_graphs_substitution(work_dir=args.o, model_wts_name=args.m, alu_fa_file=args.f, plot_mode=args.yaxis, has_peaks=args.p, no_alu_boundries=args.no_alu_boundries)
+            gen_saturation_mutagenesis_graphs_substitution(work_dir=args.o, model_wts_name=args.m, alu_fa_file=args.f, plot_mode=args.yaxis, has_peaks=args.p, no_alu_boundaries=args.no_alu_boundaries)
         elif args.t == 'deletion':
-            gen_saturation_mutagenesis_graphs_deletion(work_dir=args.o, model_wts_name=args.m, ks=args.k, alu_fa_file=args.f, plot_mode=args.yaxis, has_peaks=args.p, no_alu_boundries=args.no_alu_boundries)
+            gen_saturation_mutagenesis_graphs_deletion(work_dir=args.o, model_wts_name=args.m, ks=args.k, alu_fa_file=args.f, plot_mode=args.yaxis, has_peaks=args.p, no_alu_boundaries=args.no_alu_boundaries)
