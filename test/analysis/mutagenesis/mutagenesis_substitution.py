@@ -197,7 +197,7 @@ def peak_detect_store(work_dir):
     peak_all_fh.close()
     return peak_dict
 
-def draw_plot(work_dir, plot_mode='fixed', strand=True, has_peaks=False, peak_dict=None):
+def draw_plot(work_dir, plot_mode='fixed', strand=True, has_peaks=False, peak_dict=None, no_alu_boundries=False):
     # has_peaks controls if we draw peaks range on the satruation mutagenesis imgaes
     # if yes, then draw 
     # plot mode fixed means: fix the range of y-axis from -0.3 to 0.3
@@ -220,14 +220,15 @@ def draw_plot(work_dir, plot_mode='fixed', strand=True, has_peaks=False, peak_di
         plt.figure(figsize=(40, 4.8), dpi=150)
         plt.hlines([0], xmin=0, xmax=alu_len + 1, colors=['gray'], linestyles='dashed')
         # plt.vlines([0], ymin=-1, ymax=1, colors=['gray'], linestyles='dashed')
-        # alu boundary lines
-        plt.axvline(25, color='gray', linestyle='dashed') 
+        # alu boundry lines
+        if not no_alu_boundries:
+            plt.axvline(25, color='gray', linestyle='dashed') 
+            plt.axvline(alu_len - 25, color='gray', linestyle='dashed')
         if strand:
             if plot_mode == 'adaptive':
                 plt.text(25, max_change_abs*1.1, f'{id_lst[0]}:{int(id_lst[1]) + 350}-{int(id_lst[2]) - 350}({id_lst[3]})', ha='center')
             elif plot_mode == 'fixed':
                 plt.text(25, 0.31, f'{id_lst[0]}:{int(id_lst[1]) + 350}-{int(id_lst[2]) - 350}({id_lst[3]})', ha='center')
-        plt.axvline(alu_len - 25, color='gray', linestyle='dashed')
         ori_alu_id = (id_lst[0], str(int(id_lst[1]) + 350), str(int(id_lst[2]) - 350), id_lst[3])
         if has_peaks:
             for peak in peak_dict[id_lst][0]:
@@ -262,7 +263,7 @@ def draw_plot(work_dir, plot_mode='fixed', strand=True, has_peaks=False, peak_di
         plt.close()
 
 
-def gen_saturation_mutagenesis_graphs_substitution(work_dir, model_wts_name, genome=None, alu_bed_file=None, alu_fa_file=None, plot_mode='fixed', has_peaks=True):
+def gen_saturation_mutagenesis_graphs_substitution(work_dir, model_wts_name, genome=None, alu_bed_file=None, alu_fa_file=None, plot_mode='fixed', has_peaks=True, no_alu_boundries=False):
     os.makedirs(work_dir, exist_ok=True)
     if alu_bed_file:
         src_bed = alu_bed_file
@@ -299,6 +300,6 @@ def gen_saturation_mutagenesis_graphs_substitution(work_dir, model_wts_name, gen
     gen_mutated_score_dict(work_dir, baseline_rslt, mutated_rslt, os.path.join(work_dir, 'tables'))
     if has_peaks:
         peak_dict = peak_detect_store(work_dir)
-        draw_plot(work_dir, plot_mode, strand=True, has_peaks=has_peaks, peak_dict=peak_dict)
+        draw_plot(work_dir, plot_mode, strand=True, has_peaks=has_peaks, peak_dict=peak_dict, no_alu_boundries=no_alu_boundries)
     else:
-        draw_plot(work_dir, plot_mode, strand=True, has_peaks=has_peaks)
+        draw_plot(work_dir, plot_mode, strand=True, has_peaks=has_peaks, no_alu_boundries=no_alu_boundries)

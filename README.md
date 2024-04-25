@@ -131,11 +131,15 @@ positional arguments:
 optional arguments:
   -h, --help   show this help message and exit
 ```
-NOTE that the BED file input contains coordinates of the *Alu* sequences only, without the 350 bp context, whereas the FASTA file input contains the *Alu* sequence _plus_ context.
+
+**Input File Differences:**
+
+- **BED File**: Contains only the coordinates of the *Alu* sequences.
+- **FASTA File**: Includes both the *Alu* sequences and 350 bp contextual regions around them.
 
 To input a BED file:
 ```
-usage: run_mutagenesis.py bed [-h] -t TYPE [-k K_BP_DELETION_LIST] [-p] -b ALU_BED_FILE -r REF_GENOME_FILE -m MODEL_WEIGHTS_FILE -o OUTPUT_DIR [--yaxis Y_AXIS_MODE]
+usage: run_mutagenesis.py bed [-h] -t TYPE [-k K_BP_DELETION_LIST] [-p] -b ALU_BED_FILE -r REF_GENOME_FILE -m MODEL_WEIGHTS_FILE -o OUTPUT_DIR [--yaxis Y_AXIS_MODE] [--no-alu-boundries]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -149,11 +153,12 @@ optional arguments:
                         the trained model weights file
   -o OUTPUT_DIR         the directory contains temp files and final output file
   --yaxis Y_AXIS_MODE   limits of y-axis is fixed to +/-0.3 or adaptive, the default is fixed mode
+  --no-alu-boundries    Do not draw Alu boundries (grey vertical dashed lines) on plot
 ```
 
 To input a FASTA file:
 ```
-usage: run_mutagenesis.py fasta [-h] -t TYPE [-k K_BP_DELETION_LIST] [-p] -f ALU_FASTA_FILE -m MODEL_WEIGHTS_FILE [-o OUTPUT_DIR] [--yaxis Y_AXIS_MODE]
+usage: run_mutagenesis.py fasta [-h] -t TYPE [-k K_BP_DELETION_LIST] [-p] -f ALU_FASTA_FILE -m MODEL_WEIGHTS_FILE [-o OUTPUT_DIR] [--yaxis Y_AXIS_MODE] [--no-alu-boundries]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -166,14 +171,28 @@ optional arguments:
                         the trained model weights file
   -o OUTPUT_DIR         the directory contains temp files and final output file, default ./out
   --yaxis Y_AXIS_MODE   limits of y-axis is fixed to +/-0.3 or adaptive, the default is fixed mode
+  --no-alu-boundries    Do not draw Alu boundries (grey vertical dashed lines) on plot
 ```
-<!--Since we need the formatted description lines (start with ">") to label the sequences and plot text information within the output images, you may want to format the description lines in the FASTA input file as shown below:
-```
->h38_mk_AluY::chr12:70285190-70285525(-)
-```-->
-The output images are created in OUTPUT_DIR/imgs/, and the text files with the score change data in OUTPUT_DIR/tables/.
 
-<!--NOTE that, when specified, the '-alu' option will mark the endpoints of the *Alu* given the coordinates from the ALU_BED_FILE when the input is 'bed' type, and the endpoints of the 350 bp flanking regions when the input is 'fasta' type.-->
+**FASTA File Formatting:**
+Since we need the formatted description lines (start with ">") to label the sequences and plot text information within the output images, you may want to format the description lines in the FASTA input file as shown below:
+```
+>ANY_INFO::ANY_CHR:START-END(ANY_STRAND)
+```
+Where:
+- `ANY_INFO`: Identifier or additional details.
+- `ANY_CHR`: Chromosome name.
+- `START` and `END`: Genomic coordinates (ensure `END - START` equals the length of the Alu element).
+- `ANY_STRAND`: DNA strand (`+` for forward, `-` for reverse).
+- Example: `>h38_mk_AluJb::chr19:1517005-1518036(-)`
+
+The output images are created in OUTPUT_DIR/imgs/, the text files with the score change data in OUTPUT_DIR/tables/, and the peak files in OUTPUT_DIR/peaks/
+
+***Alu* Endpoints Marking:**
+
+- For 'bed' type inputs, the program automatically marks the *Alu* endpoints using coordinates from the ALU_BED_FILE.
+- For 'fasta' type inputs, it marks the endpoints of the 350 bp flanking regions.
+- Use the `--no-alu-boundries` option if you do not want the endpoints marked.
 
 #### Example
 Below is an example showing how to plot the mutagenesis graphs given a BED or FASTA file input:
@@ -183,7 +202,7 @@ cd test/analysis/mutagenesis
 python run_mutagenesis.py bed -t substitution -b ./example_alu.bed -r REF_GENOME_FILE -m ../../models/model_weights.pt -o ./demo_out --yaxis fixed
 python run_mutagenesis.py fasta -t substitution -f ./example_alu.fa -m ../../models/model_weights.pt -o ./demo_out --yaxis adaptive -p
 python run_mutagenesis.py bed -t deletion -k 5,10,15 -b ./example_alu.bed -r REF_GENOME_FILE -m ../../models/model_weights.pt -o ./demo_out --yaxis fixed -p
-python run_mutagenesis.py fasta -t deletion -k 1,6,11,16 -f ./example_alu.fa -m ../../models/model_weights.pt -o ./demo_out --yaxis fixed -p
+python run_mutagenesis.py fasta -t deletion -k 1,6,11,16 -f ./example_alu.fa -m ../../models/model_weights.pt -o ./demo_out --yaxis fixed -p --no-alu-boundries
 ```
 
 ## <a name="support"></a> Support
