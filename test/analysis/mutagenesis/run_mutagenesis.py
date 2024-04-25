@@ -42,6 +42,8 @@ def get_arguments():
                             help='a comma-separated list of integers (1 to 4 elements, each between 1 and 30) specifying the number of deleting bases for deletion mutagenesis plot')
     parser_bed.add_argument('-p', action='store_true',
                             help='draw peaks on plot and output peaks file')
+    parser_bed.add_argument('-b', metavar='ALU_BED_FILE', type=str, required=True, 
+                            help='the input Alu bed file')
     parser_bed.add_argument('-r', metavar='REF_GENOME_FILE', type=str, required=True, 
                             help='the reference genome file')
     parser_bed.add_argument('-m', metavar='MODEL_WEIGHTS_FILE', type=str, required=True, 
@@ -83,6 +85,8 @@ def get_arguments():
 
 if __name__ == "__main__":
     args = get_arguments()
+    print(args.b)
+    exit()
     if args.input_mode == 'bed':
         if args.t == 'substitution':
             gen_saturation_mutagenesis_graphs_substitution(work_dir=args.o, genome=args.r, model_wts_name=args.m, alu_bed_file=args.b, plot_mode=args.yaxis, has_peaks=args.p)

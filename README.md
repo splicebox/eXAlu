@@ -135,7 +135,7 @@ NOTE that the BED file input contains coordinates of the *Alu* sequences only, w
 
 To input a BED file:
 ```
-usage: run_mutagenesis.py bed [-h] -t TYPE [-k K_BP_DELETION_LIST] [-p] -r REF_GENOME_FILE -m MODEL_WEIGHTS_FILE -o OUTPUT_DIR [--yaxis Y_AXIS_MODE]
+usage: run_mutagenesis.py bed [-h] -t TYPE [-k K_BP_DELETION_LIST] [-p] -b ALU_BED_FILE -r REF_GENOME_FILE -m MODEL_WEIGHTS_FILE -o OUTPUT_DIR [--yaxis Y_AXIS_MODE]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -143,6 +143,7 @@ optional arguments:
   -k K_BP_DELETION_LIST
                         a comma-separated list of integers (1 to 4 elements, each between 1 and 30) specifying the number of deleting bases for deletion mutagenesis plot
   -p                    draw peaks on plot and output peaks file
+  -b ALU_BED_FILE       the input Alu bed file
   -r REF_GENOME_FILE    the reference genome file
   -m MODEL_WEIGHTS_FILE
                         the trained model weights file
