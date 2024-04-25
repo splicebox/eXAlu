@@ -3,7 +3,7 @@ A Deep Learning model to predict *Alu* exonization events in the human genome ba
 
 Described in:
 
-He Z, Chen O, Phillips N, Lui WW, Pasquesi GIM, Sabunciyan S, Florea L (2024). Predicting *Alu* exonization in the human genome with a deep learning model, [*bioRxiv*](https://www.biorxiv.org/content/10.1101/2024.01.03.574099v1) **doi:** https://doi.org/10.1101/2024.01.03.574099. *Submitted.*
+He Z, Chen O, Phillips N, Lui WW, Pasquesi GIM, Sabunciyan S, Florea L (2024). Predicting *Alu* exonization in the human genome with a deep learning model, [*bioRxiv*](https://www.biorxiv.org/content/10.1101/2024.01.03.574099v1) **doi:** https://doi.org/10.1101/2024.01.03.574099. *Submitted.* [[Supporting data](http://ccb.jhu.edu/software/eXAlu/)]
 
 ```
 Copyright (C) 2022-2024, and GNU GPL v3.0, by Zitong He, Liliana Florea
@@ -22,16 +22,17 @@ This program is free software: you can redistribute it and/or modify it under th
 ### <a name="what-is-exalu"></a> What is eXAlu?
 eXAlu is a Convolutional Neural Network (CNN) model that predicts the likelihood of an *Alu* repeat to be exonized based on genomic sequences.
 
-*Alu* elements are ∼300 bp sequences belonging to an order of retrotransposons termed Short Interspersed Nuclear Elements (SINEs), found in the genomes of primates. The human genome contains more than one million copies, representing ~11% of the genome. While most *Alu* elements map to nonfunctional intergenic and intronic sequences, some become incorporated into genes. In particular, *Alu* exonization, in which an intronic *Alu* sequence is recruited into a gene transcript via splicing (see [figure](transcript_alu)), can disrupt or create gene function, potentially leading to disease. 
+*Alu* elements are ∼300 bp sequences belonging to an order of retrotransposons termed Short Interspersed Nuclear Elements (SINEs), found in the genomes of primates. The human genome contains more than one million copies, representing ~11% of the genome. While most *Alu* elements map to nonfunctional intergenic and intronic sequences, some become incorporated into genes. In particular, *Alu* *exonization*, in which an intronic *Alu* sequence is recruited into a gene transcript via splicing (see [figure](#transcript_alu)), can disrupt or create gene function, potentially leading to disease. 
 
 <!-- ![transcript_alu](images/transcript_alu.png) -->
+<a name="transcript_alu"></a>
 <p align="center"><a name="transcript_alu"> </a><img title="Alu exonization" src="images/transcript_alu.png" width=55%></p>
 
-The model takes as input a set of *Alu* elements surrounded by 350 bp context and outputs the probability for each *Alu* to undergo exonization. The model's network has six convolutional layers, batch-norm layers and pooling layers, followed by fully-connected layers that map the features extracted by the convolutional layers to the output probabilities. eXAlu was trained on human *Alu* sequences extracted from the RNA-seq data in 28 human tissues represented in the GTEx repository, as described [here](https://www.frontiersin.org/articles/10.3389/fmolb.2021.727537/full). Briefly, RNA-seq reads were aligned to the human genome with [STAR](https://github.com/alexdobin/STAR) and assembled into transcripts with [CLASS2](https://sourceforge.net/p/splicebox/wiki/CLASS/), then internal exons overlapping *Alu* annotations in antisense to the gene were extracted as *Alu* exons.
+The model takes as input a set of *Alu* elements surrounded by 350 bp sequence context and outputs the probability for each *Alu* to undergo exonization. The model's network has six convolutional layers, batch-norm layers and pooling layers, followed by fully-connected layers that map the features extracted by the convolutional layers to the output probabilities. The output is a probability score labeled as follows: the *Alu* is deemed ‘exonized’ iff (score>=0.5). eXAlu was trained on human *Alu* sequences extracted from the RNA-seq data in 28 human tissues represented in the GTEx repository. Briefly, RNA-seq reads were aligned to the human genome with [STAR](https://github.com/alexdobin/STAR) and assembled into transcripts with [CLASS2](https://sourceforge.net/p/splicebox/wiki/CLASS/), then internal exons overlapping *Alu* annotations in antisense to the gene were extracted as *Alu* exons.
 
 <!-- ![model_network](images/model_network.png) -->
 
-This repository provides *inference* and *mutagenesis plotting* functions. The inference module implements the prediction function. The mutagenesis module produces graphs showing the difference in the model's score when mutating the input sequence, either single nucleotide changes or block deletions. 
+This repository provides *inference* and *mutagenesis plotting* functions. The *inference* module implements the prediction function. The *mutagenesis* module produces graphs showing the difference in the model's score when mutating the input sequence, either single nucleotide changes or block deletions. Upon user request, graphs are annotated with peaks, which point to features important for recognition and the exonization process, such as splicing regulatory signals. Negative peaks mark changes in the local sequence context that reduce the probability of exonization, and positive peaks mark changes leading to an increased probability.  
 
 ### <a name="installation"></a> Installation
 eXAlu is compatible with Linux (tested), Windows and MacOS. It requires Python 3.9+, CUDA 11.2+, and PyTorch 1.10+.
@@ -58,7 +59,7 @@ pip install -e .
 ### <a name="usage"></a> Usage
 
 ### <a name="inference"></a> Inference
-The inference module takes as input either a BED file containing the genomic *Alu* intervals, or a FASTA file containing the *Alu* plus 350 bp context sequences and, for each element, it predicts the likelihood that it can become exonized.
+The *inference* module takes as input either a BED file containing the genomic *Alu* intervals, or a FASTA file containing the *Alu* plus 350 bp context sequences and, for each element, it predicts the likelihood that it can become exonized.
 ```
 usage: run_eXAlu.py [-h] {bed,fasta} ...
 
@@ -89,10 +90,18 @@ To input a FASTA file:
 python run_eXAlu.py fasta -f ALU_FASTA_FILE -m MODEL_WEIGHTS_FILE -o OUTPUT_DIR
 
 optional arguments:
-  -f ALU_FASTA_FILE     the input *Alu* fasta file
+  -f ALU_FASTA_FILE     the input Alu fasta file
   -m MODEL_WEIGHTS_FILE the trained model weights file
   -o OUTPUT_DIR         the directory containing temp files and final output file, default ./out
 ```
+#### Output
+The output is formatted as follows:
+```
+7.568726232420886e-06   3.0     h38_mk_AluY_1_bothfix_0_0_NA::chr1:8388281-8388653(-)
+6.5665931288094725e-06  3.0     h38_mk_AluSc_2_bothfix_0_0_NA::chr1:33554151-33554518(-)
+7.541426384705119e-06   3.0     h38_mk_AluY_3_bothfix_0_0_NA::chr1:41942860-41943240(-)
+```
+where column 1 is the predicted eXAlu score, column 2 is a placeholder, and column 3 describes the *Alu* element, including *Alu* name, index in the file and location and strand on the genome.
 
 #### Example
 Below is an example showing inference for a small *Alu* BED file using the trained network weights:
@@ -105,7 +114,10 @@ python run_eXAlu.py fasta -f example_alu.fa -m ../models/model_weights.pt -o ./d
 ```
 
 ### <a name="mutagenesis"></a> Mutagenesis
-The mutagenesis module generates plots showing the effects that sequence mutations have on the model's prediction, along with annotations of peaks and, optionally, landmarks such as exon and repeat boundaries. It supports two types of mutations: single nucleotide changes and small block deletions (k=1..20 bp). For single nucleotide changes, within an *Alu* sequence and its 350 bp surrounding context regions, it mutates each base into each of the three alternate bases, plotting the difference in scores between the mutated and original sequences. For k bp block deletions, it deletes the k bp segment starting at that position. Annotations of exon boundaries, if specified, are marked with red vertical bars, and *Alu* boundaries are shown with black vertical bars. Lastly, positive and negative peaks are determined with a sliding window algorithm. Note that the peak detection algorithms have been calibrated for single base substitutions and small deletions (k<=20 bp) and may not be suitable for larger blocks.
+The *mutagenesis* module generates plots showing the effects that sequence mutations have on the model's prediction, along with annotations of peaks and, optionally, landmarks such as exon and repeat boundaries. It supports two types of mutations: single nucleotide changes and small block deletions (k=1..30 bp). For single nucleotide changes, within an *Alu* sequence and its 350 bp surrounding context regions, it mutates each base into each of the three alternate bases, plotting the difference in scores between the mutated and original sequences. For k bp block deletions, it deletes the k bp segment starting at that position. Annotations of exon boundaries, if specified, are marked with red vertical bars, and *Alu* boundaries are shown with black vertical bars (see [figure](#mutagenesis_plot))). Lastly, positive and negative peaks are determined with a sliding window algorithm. Note that the peak detection algorithms have been calibrated for single base substitutions and small deletions (k<=20 bp) and may not be suitable for larger blocks.
+
+<a name="mutagenesis_plot"></a>
+<p align="center"><a name="mutagenesis_plot"> </a><img title="Mutagenesis plot" src="images/mut_plot.png" width=55%></p>
 
 ```
 usage: run_mutagenesis.py [-h] {bed,fasta} ...
@@ -118,7 +130,7 @@ positional arguments:
 optional arguments:
   -h, --help   show this help message and exit
 ```
-Note that the BED file input contains coordinates of the *Alu* sequences only, without the 350 bp context, whereas the FASTA file input contains the *Alu* sequence plus context.
+NOTE that the BED file input contains coordinates of the *Alu* sequences only, without the 350 bp context, whereas the FASTA file input contains the *Alu* sequence _plus_ context.
 
 To input a BED file:
 ```
@@ -136,10 +148,7 @@ optional arguments:
   -o OUTPUT_DIR         the directory contains temp files and final output file
   --yaxis Y_AXIS_MODE   limits of y-axis is fixed to +/-0.3 or adaptive, the default is fixed mode
 ```
-Since we need the formatted description lines (start with ">") to label the sequences and plot text information within the output images, you may want to format the description lines in the FASTA input file as shown below:
-```
->h38_mk_AluY::chr12:70285190-70285525(-)
-```
+
 To input a FASTA file:
 ```
 usage: run_mutagenesis.py fasta [-h] -t TYPE [-k K_BP_DELETION_LIST] [-p] -f ALU_FASTA_FILE -m MODEL_WEIGHTS_FILE [-o OUTPUT_DIR] [--yaxis Y_AXIS_MODE]
@@ -156,7 +165,10 @@ optional arguments:
   -o OUTPUT_DIR         the directory contains temp files and final output file, default ./out
   --yaxis Y_AXIS_MODE   limits of y-axis is fixed to +/-0.3 or adaptive, the default is fixed mode
 ```
-
+<!--Since we need the formatted description lines (start with ">") to label the sequences and plot text information within the output images, you may want to format the description lines in the FASTA input file as shown below:
+```
+>h38_mk_AluY::chr12:70285190-70285525(-)
+```-->
 The output images are created in OUTPUT_DIR/imgs/, and the text files with the score change data in OUTPUT_DIR/tables/.
 
 #### Example
