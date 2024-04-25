@@ -108,7 +108,7 @@ python run_eXAlu.py fasta -f example_alu.fa -m ../models/model_weights.pt -o ./d
 The mutagenesis module generates plots showing the effects that sequence mutations have on the model's prediction, along with annotations of peaks and, optionally, landmarks such as exon and repeat boundaries. It supports two types of mutations: single nucleotide changes and small block deletions (k=1..20 bp). For single nucleotide changes, within an *Alu* sequence and its 350 bp surrounding context regions, it mutates each base into each of the three alternate bases, plotting the difference in scores between the mutated and original sequences. For k bp block deletions, it deletes the k bp segment starting at that position. Annotations of exon boundaries, if specified, are marked with red vertical bars, and *Alu* boundaries are shown with black vertical bars. Lastly, positive and negative peaks are determined with a sliding window algorithm. Note that the peak detection algorithms have been calibrated for single base substitutions and small deletions (k<=20 bp) and may not be suitable for larger blocks.
 
 ```
-python mutagenesis.py [-h] {bed,fasta} ...
+usage: run_mutagenesis.py [-h] {bed,fasta} ...
 
 positional arguments:
   {bed,fasta}  select bed or fasta input mode
@@ -122,16 +122,19 @@ Note that the BED file input contains coordinates of the *Alu* sequences only, w
 
 To input a BED file:
 ```
-python mutagenesis.py bed [-h] -b ALU_BED_FILE -r REF_GENOME_FILE -m MODEL_WEIGHTS_FILE -o OUTPUT_DIR [--yaxis Y_AXIS_MODE]
+usage: run_mutagenesis.py bed [-h] -t TYPE [-k K_BP_DELETION_LIST] [-p] -r REF_GENOME_FILE -m MODEL_WEIGHTS_FILE -o OUTPUT_DIR [--yaxis Y_AXIS_MODE]
 
 optional arguments:
   -h, --help            show this help message and exit
-  -b ALU_BED_FILE       the input *Alu* bed file
+  -t TYPE               the type of mutagenesis plot, please choose from substitution or deletion, -k is required when the type is deletion
+  -k K_BP_DELETION_LIST
+                        a comma-separated list of integers (1 to 4 elements, each between 1 and 30) specifying the number of deleting bases for deletion mutagenesis plot
+  -p                    draw peaks on plot and output peaks file
   -r REF_GENOME_FILE    the reference genome file
   -m MODEL_WEIGHTS_FILE
                         the trained model weights file
   -o OUTPUT_DIR         the directory contains temp files and final output file
-  --yaxis Y_AXIS_MODE   limits of y-axis is fixed to +/-0.3 or adaptive. The default is fixed mode
+  --yaxis Y_AXIS_MODE   limits of y-axis is fixed to +/-0.3 or adaptive, the default is fixed mode
 ```
 Since we need the formatted description lines (start with ">") to label the sequences and plot text information within the output images, you may want to format the description lines in the FASTA input file as shown below:
 ```
@@ -139,26 +142,32 @@ Since we need the formatted description lines (start with ">") to label the sequ
 ```
 To input a FASTA file:
 ```
-python mutagenesis.py fasta [-h] -f ALU_FASTA_FILE -m MODEL_WEIGHTS_FILE [-o OUTPUT_DIR] [--yaxis Y_AXIS_MODE]
+usage: run_mutagenesis.py fasta [-h] -t TYPE [-k K_BP_DELETION_LIST] [-p] -f ALU_FASTA_FILE -m MODEL_WEIGHTS_FILE [-o OUTPUT_DIR] [--yaxis Y_AXIS_MODE]
 
 optional arguments:
   -h, --help            show this help message and exit
-  -f ALU_FASTA_FILE     the input *Alu* fa file
+  -t TYPE               the type of mutagenesis plot, please choose from substitution or deletion, -k is required when the type is deletion
+  -k K_BP_DELETION_LIST
+                        a comma-separated list of integers (1 to 4 elements, each between 1 and 30) specifying the number of deleting bases for deletion mutagenesis plot
+  -p                    draw peaks on plot and output peaks file
+  -f ALU_FASTA_FILE     the input Alu fa file
   -m MODEL_WEIGHTS_FILE
                         the trained model weights file
   -o OUTPUT_DIR         the directory contains temp files and final output file, default ./out
-  --yaxis Y_AXIS_MODE   limits of y-axis is fixed to +/-0.3 or adaptive. The default is fixed mode
+  --yaxis Y_AXIS_MODE   limits of y-axis is fixed to +/-0.3 or adaptive, the default is fixed mode
 ```
 
-The output images are created in ./demo_out/imgs/, and the text files with the score change data in ./demo_out/tables/.
+The output images are created in OUTPUT_DIR/imgs/, and the text files with the score change data in OUTPUT_DIR/tables/.
 
 #### Example
 Below is an example showing how to plot the mutagenesis graphs given a BED or FASTA file input:
 ```
 conda activate alu_env
 cd test/analysis/mutagenesis
-python mutagenesis.py bed -b ./example_alu.bed -r REF_GENOME_FILE -m ../../models/model_weights.pt -o ./demo_out --yaxis fixed
-python mutagenesis.py fasta -f ./example_alu.fa -m ../../models/model_weights.pt -o ./demo_out --yaxis adaptive
+python run_mutagenesis.py bed -t substitution -b ./example_alu.bed -r REF_GENOME_FILE -m ../../models/model_weights.pt -o ./demo_out --yaxis fixed
+python run_mutagenesis.py fasta -t substitution -f ./example_alu.fa -m ../../models/model_weights.pt -o ./demo_out --yaxis adaptive -p
+python run_mutagenesis.py bed -t deletion -k 5,10,15 -b ./example_alu.bed -r REF_GENOME_FILE -m ../../models/model_weights.pt -o ./demo_out --yaxis fixed -p
+python run_mutagenesis.py fasta -t deletion -k 1,6,11,16 -f ./example_alu.fa -m ../../models/model_weights.pt -o ./demo_out --yaxis fixed -p
 ```
 
 ### <a name="support"></a> Support

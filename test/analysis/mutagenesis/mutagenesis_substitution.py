@@ -108,7 +108,7 @@ def mutate_seq_all(seq_fa_dict, mutated_fa):
             mutated_fa_fh.write(id_line)
             mutated_fa_fh.write(mutated_seq + '\n')
 
-def get_mutated_fa(unmutated_fa, mutated_fa, genome, strand=True, src_bed=None, contexted_bed=None, mode='bothfix', single_side_pad_len=350, snp_file=None):
+def get_mutated_fa(unmutated_fa, mutated_fa, genome, strand=True, src_bed=None, contexted_bed=None, mode='bothfix', single_side_pad_len=350):
     '''
     src_bed and contexted_bed should be passed together, or None together
     unmutated_fa_file is dst_bed_file's pair fa
@@ -138,7 +138,6 @@ def gen_mutated_score_dict(work_dir, baseline_rslt, mutated_rslt, save_table_dir
             os.makedirs(save_table_dir, exist_ok=True)
             table_path = os.path.join(save_table_dir, ori_alu_id_str + '.tsv')
             save_table_fh = open(table_path, 'w')
-            print('saving mutagenesis plot data in', table_path)
             save_table_fh.write('AluID\tExtAluID\tOffset\tPOS\tREF\tALT\tMutatedScore\tBaselineScore\tChange\n')
         char_result_dict = {}
         for mutation, score in mutated_rslt[_id]:
@@ -149,7 +148,7 @@ def gen_mutated_score_dict(work_dir, baseline_rslt, mutated_rslt, save_table_dir
                 save_table_fh.write(f'{ori_alu_id_str}\t{_id}\t{pos}\t{int(id_lst[1]) + int(pos)}\t{ref}\t{alt}\t{score}\t{baseline_rslt[_id]}\t{change}\n')
             if alt not in char_result_dict:
                 char_result_dict[alt] = [[], []]
-            if 325 <= int(pos) < 700:
+            if 325 <= int(pos) < int(id_lst[2]) - int(id_lst[1]) - 325:
                 # new_pos here are those pos from 325 to 700 (max) actually
                 # the contexts are 25bp now, truncate from above original pos, in order to show only 25 bp context instead of 350 bp.
                 new_pos = int(pos) - 325
@@ -263,6 +262,62 @@ def peak_detect(work_dir):
         peak_dict[_id] = (peak_lst, peak_mean_lst)
     return peak_dict
 
+def peak_detect_store(work_dir):
+    prd_file = 'baseline_prd_y.txt'
+    baseline_rslt = {}
+    with open(work_dir + '/' + prd_file, 'r') as prd_fh:
+        for line in prd_fh.readlines():
+            line_lst = line.rstrip()[1:].split('\t')
+            baseline_rslt[line_lst[2].split('::')[1]] = float(line_lst[0])
+    # run mutated
+    mutated_rslt = defaultdict(list) 
+    prd_file= 'mutated_prd_y.txt'
+    with open(work_dir + '/' + prd_file, 'r') as prd_fh:
+        for line in prd_fh.readlines():
+            line_lst = line.rstrip()[1:].split('\t')
+            # 0.984420120716095	3.0	chr10_101017466_101017851_+_h38_mk_AluSq2_1_335_1_bothfix_0_0_NA::3_t_C
+            # id line: h38_mk_AluSq2_2_329_2_bothfix_0_0_NA::chr11:112229347-112229726(-)::378_A_T
+            mutated_rslt[line_lst[2].split('::')[1]].append((line_lst[2].split('::')[-1], float(line_lst[0]))) # {id:(mutation, score)}
+    # generate mutated score dict
+    # gen_mutated_score_dict(work_dir, baseline_rslt, mutated_rslt)
+    gen_mutated_score_dict(work_dir, baseline_rslt, mutated_rslt, os.path.join(work_dir, 'tables'))
+    # peak detection
+    peak_dict = peak_detect(work_dir)
+    os.makedirs(work_dir + '/peaks/', exist_ok=True)
+    peak_all_bed = work_dir + '/peaks/' + f'peaks_all.bed'
+    peak_all_fh = open(peak_all_bed, 'w') 
+    # peak store
+    for _chr in ['chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8', 'chr9', 'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chr16', 'chr17', 'chr18', 'chr19', 'chr20', 'chr21', 'chr22', 'chrX', 'chrY']:
+        peak_bed = work_dir + '/peaks/' + f'peaks_{_chr}.bed'
+        peak_fh = open(peak_bed, 'w') 
+        for _id in peak_dict:
+            # _id is ext id, 350 bp context
+            # but those peaks are calculated on the truncated 25 bp context instead
+            # k,v: ('chr10', '101017141', '101018176', '+') [(165, 180), (310, 325)]
+            if _id[0] != _chr:
+                continue
+            ori_alu_id = (_id[0], str(int(_id[1]) + 350), str(int(_id[2]) - 350), _id[3])
+            for i in range(len(peak_dict[_id][0])):
+                peak = peak_dict[_id][0][i]
+                if _id[3] == '+':
+                    peak_start = int(ori_alu_id[1]) + (peak[0] - 25) - 2
+                    peak_end = int(ori_alu_id[1]) + (peak[1] - 25) + 2
+                else:
+                    peak_start = int(ori_alu_id[2]) - (peak[1] - 25) - 2
+                    peak_end = int(ori_alu_id[2]) - (peak[0] - 25) + 2
+                pos_neg = 'Pos' if peak_dict[_id][1][i] >= 0 else 'Neg'
+                peak_id = '_'.join(ori_alu_id) + '_' + str(peak[0] - 25) + '_' + str(peak[1] - 25) + '_' + str(pos_neg) # + '_' + '_'.join([str(exon_left), str(exon_right)])
+                # we need seq on the opposite strand (exon)
+                if _id[3] == '+':
+                    writing_line = f'{_id[0]}\t{peak_start}\t{peak_end}\t{peak_id}\t0\t-\n'
+                else:
+                    writing_line = f'{_id[0]}\t{peak_start}\t{peak_end}\t{peak_id}\t0\t+\n'
+                peak_fh.write(writing_line)
+                peak_all_fh.write(writing_line)
+        peak_fh.close()
+    peak_all_fh.close()
+    return peak_dict
+
 def draw_plot(work_dir, plot_mode='fixed', strand=True, has_peaks=False, peak_dict=None):
     # has_peaks controls if we draw peaks range on the satruation mutagenesis imgaes
     # if yes, then draw 
@@ -298,7 +353,8 @@ def draw_plot(work_dir, plot_mode='fixed', strand=True, has_peaks=False, peak_di
         if has_peaks:
             for peak in peak_dict[id_lst][0]:
                 if plot_mode == 'adaptive':
-                    plt.arrow(peak[0], -max_change_abs*1.1, peak[1] - peak[0], 0, shape='full')
+                    # plt.arrow(peak[0], -max_change_abs*1.1, peak[1] - peak[0], 0, shape='full')
+                    plt.annotate(text='', xy=(peak[0], -max_change_abs), xytext=(peak[1], -max_change_abs), arrowprops=dict(arrowstyle='<->', color='purple', shrinkA=0, shrinkB=0))
                     # plt.axvline(int(loc) - int(id_lst[1]), color='red', linestyle='dashed')
                 elif plot_mode == 'fixed':
                     plt.annotate(text='', xy=(peak[0], -0.29), xytext=(peak[1], -0.29), arrowprops=dict(arrowstyle='<->', color='purple', shrinkA=0, shrinkB=0))
@@ -307,6 +363,7 @@ def draw_plot(work_dir, plot_mode='fixed', strand=True, has_peaks=False, peak_di
             if char not in char_result_dict.keys():
                 continue
             X, Y = char_result_dict[char]
+            # if id_lst[0] == 'chr12':
             plt.scatter(X, Y, c=char_color_dict[char], s=20, label=char)
         if plot_mode == 'adaptive':
             plt.ylim(-max_change_abs, +max_change_abs)
@@ -326,7 +383,7 @@ def draw_plot(work_dir, plot_mode='fixed', strand=True, has_peaks=False, peak_di
         plt.close()
 
 
-def gen_saturation_mutagenesis_graphs_substitution(work_dir, model_wts_name, genome=None, alu_bed_file=None, alu_fa_file=None, plot_mode='fixed'):
+def gen_saturation_mutagenesis_graphs_substitution(work_dir, model_wts_name, genome=None, alu_bed_file=None, alu_fa_file=None, plot_mode='fixed', has_peaks=True):
     os.makedirs(work_dir, exist_ok=True)
     if alu_bed_file:
         src_bed = alu_bed_file
@@ -338,7 +395,6 @@ def gen_saturation_mutagenesis_graphs_substitution(work_dir, model_wts_name, gen
         unmutated_fa = alu_fa_file
         mutated_fa = os.path.join(work_dir, 'mutated_test.fa')
         get_mutated_fa(unmutated_fa, mutated_fa, genome, strand=True, src_bed=None, contexted_bed=None, mode='bothfix', single_side_pad_len=350)
-    # run baseline
     infer_file = unmutated_fa
     prd_file = 'baseline_prd_y.txt'
     run_ead(strand=True, run_mode=4, work_dir=work_dir, infer_set='simpleinfer', context_mode='bothfix', single_side_pad_len=350,
@@ -362,7 +418,8 @@ def gen_saturation_mutagenesis_graphs_substitution(work_dir, model_wts_name, gen
             mutated_rslt[line_lst[2].split('::')[1]].append((line_lst[2].split('::')[-1], float(line_lst[0]))) # {id:(mutation, score)}
     # generate mutated score dict
     gen_mutated_score_dict(work_dir, baseline_rslt, mutated_rslt, os.path.join(work_dir, 'tables'))
-    # peak detection
-    peak_dict = peak_detect(work_dir)
-    # draw
-    draw_plot(work_dir, plot_mode, strand=True, has_peaks=True, peak_dict=peak_dict)
+    if has_peaks:
+        peak_dict = peak_detect_store(work_dir)
+        draw_plot(work_dir, plot_mode, strand=True, has_peaks=has_peaks, peak_dict=peak_dict)
+    else:
+        draw_plot(work_dir, plot_mode, strand=True, has_peaks=has_peaks)
