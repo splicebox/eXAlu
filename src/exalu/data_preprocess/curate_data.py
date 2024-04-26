@@ -2,12 +2,6 @@ import os
 import pybedtools
 from .read_tissue_alu import add_context, read_tissue_alu_context
 
-# data_dir = os.getcwd() + '/data'
-# fixed_dir = data_dir + '/Fixed_add13/' # stable model use this one
-# fixed_dir = data_dir + '/Fixed_genesplicer/' # just used for generating the gene splicer analysis
-
-# human_alu_bed_file = data_dir + '/Annotation/Alu_repeats_hg38_filtered.bed'
-
 def curate_each_tissue(genome, strand, work_dir, tissue):
     '''
     This function reads data from each tissue's directory (src_pos_bed_tissue_dir), and combine all samples within a same directory below
@@ -85,13 +79,6 @@ def curate_whole(genome, strand, work_dir, mode, single_side_pad_len, tissue_lst
         src_tissue_pos_exon_bed = tissue_dir_str + '_pos_exon.bed'
         print('adding', tissue_dir_str)
 
-    # with open(work_dir + f'/{infer_set}' + '_pos_alu.fa', 'r') as src_fa_fh:
-    #     while (id_line := src_fa_fh.readline().rstrip()):
-    #         _id = id_line.split('::')[-1]
-    #         if _id in infer_pos_id_set and infer_unique:
-    #             # remove duplicate Gencode
-    #             src_fa_fh.readline()
-    #             continue
         with open(src_tissue_pos_alu_bed, 'r') as in_alu_file:
             for line in in_alu_file:
                 line_lst = line.rstrip().split('\t')
@@ -137,19 +124,6 @@ def curate_whole(genome, strand, work_dir, mode, single_side_pad_len, tissue_lst
     alu_bed = pybedtools.BedTool(dst_whole_pos_alu_bed)
     exon_bed = pybedtools.BedTool(dst_whole_pos_alu_bed)
 
-    # methond 1. merge alu and exon to get all bed file, TODO:
-    # then use human alu to substract the all bed file.
-    # with open(pos_all_bed_file.format(whole_dir), 'w') as out_file:
-        # for f in [pos_alu_bed_file.format(whole_dir), pos_exon_bed_file.format(whole_dir)]:
-            # with open(f, 'r') as in_file:
-                # for line in in_file:
-                    # out_file.write(line)
-    # pos_all_bed = pybedtools.BedTool(pos_all_bed_file.format(whole_dir))
-    # pos_all_bed.sequence(fi=ref_fa, fo=pos_all_fa_file.format(whole_dir), name=True, s=strand)
-    # human_alu_bed = pybedtools.BedTool(human_alu_bed_file)
-    # neg_alu_bed = human_alu_bed.subtract(pos_all_bed, A=True)
-
-    # method 2. use human alu to substract the alu bed file, without exon file
     human_alu_bed_file_context = os.path.join(work_dir, os.path.basename(human_alu_bed_file))
     add_context(human_alu_bed_file, human_alu_bed_file_context, mode=mode, single_side_pad_len=single_side_pad_len)
     human_alu_bed = pybedtools.BedTool(human_alu_bed_file_context)
@@ -163,48 +137,6 @@ def curate_whole(genome, strand, work_dir, mode, single_side_pad_len, tissue_lst
     neg_alu_bed.saveas(dst_neg_bed) # bed file, not needed
     neg_alu_bed.sequence(fi=ref_fa, fo=dst_neg_fa, name=True, s=strand)
 
-def curate_whole_otherspecies(genome, strand, work_dir, mode, single_side_pad_len, otherspecies='OtherSpecies'):
-    '''
-    deprecated;
-    This function curates whole dataset from every tissues
-    Gencode is used for inference, so it should not be included in trainset
-    pos: all exclude Gencode
-    neg: all_alu - all_pos_alu, this all_pos_alu include Gencode,
-        because we don't want infer set and train set share same neg data.
-    
-    data/curated_data/padding____/whole_pos_alu.fa doesn't have __infer sets__
-    data/curated_data/padding____/whole_pos_alu.bed has __infer sets__
-
-    '''
-    alu_bed = None
-    exon_bed = None
-    ref_fa = pybedtools.example_filename(genome)
-    tissue_dir_str = f'{work_dir}/{otherspecies}'
-    src_tissue_pos_alu_bed  = tissue_dir_str + '_pos_alu.bed'
-    src_tissue_pos_exon_bed = tissue_dir_str + '_pos_exon.bed'
-    dst_whole_pos_alu_fa   = tissue_dir_str + '_pos_alu.fa'
-    dst_whole_pos_exon_fa  = tissue_dir_str + '_pos_exon.fa'
-    print('adding', tissue_dir_str)
-    alu_bed = pybedtools.BedTool(src_tissue_pos_alu_bed)
-    exon_bed = pybedtools.BedTool(src_tissue_pos_exon_bed)
-    alu_bed.sequence(fi=ref_fa, fo=dst_whole_pos_alu_fa, name=True, s=strand)
-    exon_bed.sequence(fi=ref_fa, fo=dst_whole_pos_exon_fa, name=True, s=strand)
-
-    # method 2. use human alu to substract the alu bed file, without exon file
-    # TODO: hl
-    otherspecies_alu_bed = pybedtools.BedTool('/home/zitong/Projects/eXAlu/data/OtherSpecies/rheMac10_Alu_annotations.bed')
-    neg_alu_bed = otherspecies_alu_bed.subtract(alu_bed, A=True)
-    # get neg sequence
-    neg_dir_str = f'{work_dir}/{otherspecies}'
-    # TODO:
-    # can shorten below
-    # TODO:
-    # neg alu wo context now
-    # check curate_whole()
-    dst_neg_bed = neg_dir_str + f'_neg_alu.bed'
-    dst_neg_fa  = neg_dir_str + f'_neg_alu.fa'
-    neg_alu_bed.saveas(dst_neg_bed) # bed file, not needed
-    neg_alu_bed.sequence(fi=ref_fa, fo=dst_neg_fa, name=True, s=strand)
 
 def curate_simpleinfer(strand, mode, single_side_pad_len, infer_bed_file=None, work_dir=None, data_dir=None):
     genome = data_dir + '/shared/hg38/hg38c.fa' 
@@ -255,9 +187,5 @@ def curate_data(infer_set, strand, mode='none', single_side_pad_len=0, work_dir=
         curate_each_tissue(genome, strand, work_dir, tissue)
     genome = data_dir + '/shared/hg38/hg38c.fa' 
 
-    # old version 04/09/22 Alu_repeats_hg38_filtered.bed may still have false negative data
-    # human_alu_bed_file = data_dir + '/Annotation/Alu_repeats_hg38_filtered.bed'
     human_alu_bed_file = data_dir + '/Annotation/intergenic_alu/all_alu_intergenic_rm_ests_mrna.bed'
-    # new version 10/21/22 intergenic alus: Alu_repeats_hg38_filtered.bed - gencode_exons - gencode_introns
-    # human_alu_bed_file = data_dir + '/Annotation/intergenic_alu/all_alu_minus_exon_minus_intron.bed'
     curate_whole(genome, strand, work_dir, mode, single_side_pad_len, tissue_lst, human_alu_bed_file=human_alu_bed_file,infer_set_lst=[infer_set])
