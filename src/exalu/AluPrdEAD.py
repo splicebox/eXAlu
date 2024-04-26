@@ -26,45 +26,12 @@ class AluPrdEAD(object):
         self.batch_size = 2048
         if model_name == 'cnet':
             self.model = CNet_v10_5(self.batch_size)
-        # elif model_name == 'fcn':
-        #     self.model = FCN_v1(self.batch_size)
         self.model = self.model.to(self.device)
-        # self.warmup_epoch_th = 15
         self.warmup_epoch_th = 15
         self.optimizer_warmup = torch.optim.Adam(self.model.parameters(), lr=lr, betas=(0.9, 0.999), weight_decay=0.01)
-        # self.optimizer_warmup = torch.optim.NAdam(self.model.parameters(), lr=lr) # lr 3e-4
         self.optimizer_main = torch.optim.SGD(self.model.parameters(), lr=lr)
-        # self.optimizer = torch.optim.Adam(self.model.parameters(), lr=lr, betas=[0.8, 0.999], eps=0.1)
-        # self.optimizer = torch.optim.AdamW(self.model.parameters())
-        # self.optimizer = torch.optim.Adadelta(self.model.parameters())
         print(self.model)
-        if run_mode == 0 or run_mode == 2:
-            # mode 0: only train
-            # mode 2: train+infer
-            self.num_epochs = num_epochs
-            train_dataset = AluDatasetEAD(datasets['train'])
-            val_dataset =   AluDatasetEAD(datasets['val'])
-            test_dataset =  AluDatasetEAD(datasets['test'])
-            train2_dataset = AluDatasetEAD(datasets['train'])
-            self.dataset_sizes = {'train': len(train_dataset), 'val': len(val_dataset), 'test': len(test_dataset), 'train2': len(train2_dataset)}
-            self.dataloaders = {'train': DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True),
-                                'val':   DataLoader(val_dataset,   batch_size=self.batch_size, shuffle=True),
-                                'test':  DataLoader(test_dataset,  batch_size=self.batch_size, shuffle=True),
-                                'train2':DataLoader(train2_dataset,batch_size=self.batch_size, shuffle=False)}
-            if run_mode == 2:
-                infer_dataset = AluDatasetEAD(datasets['infer'])
-                self.dataset_sizes['infer'] = len(infer_dataset)
-                self.dataloaders['infer'] = DataLoader(infer_dataset, batch_size=self.batch_size, shuffle=False)
-            # classification
-            self.criterion = nn.BCEWithLogitsLoss(reduction='sum')
-            # self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, step_size=200, gamma=0.95)
-            self.scheduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer_warmup, milestones=[120], gamma=0.2)
-            # self.scheduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer_main, milestones=[60, 120], gamma=0.2)
-            # self.scheduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer_main, milestones=[30, 40, 50, 60], gamma=0.2)
-            # self.scheduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer, milestones=[200], gamma=0.5)
-            self.records = []
-            self.losses = []
-        elif run_mode in [1, 3, 4, 5, 6, 8]:
+        if run_mode in [1, 3, 4, 5, 6, 8]:
             # mode 1: infer (with label) pair with mode 0
             # mode 3: infer (with label) pair with mode 2, the infer set is from mode 2
             # mode 4: simple infer (without label)
@@ -73,12 +40,6 @@ class AluPrdEAD(object):
             infer_dataset = AluDatasetEAD(datasets['infer'])
             self.dataloaders = {'infer': DataLoader(infer_dataset, batch_size=self.batch_size, shuffle=False)}
             self.dataset_sizes = {'infer': len(infer_dataset)}
-        elif run_mode == 7:
-            # model 7: backward gradients
-            test_dataset =  AluDatasetEAD(datasets['test'])
-            self.dataloaders = {'test': DataLoader(test_dataset, batch_size=self.batch_size, shuffle=False)}
-            self.dataset_sizes = {'test': len(test_dataset)}
-            self.criterion = nn.BCEWithLogitsLoss()
         print(self.dataset_sizes)
 
     def compute_precision_recall_curve(self, prd_y, y, epoch, img_dir):
@@ -133,29 +94,6 @@ class AluPrdEAD(object):
         print('{}\tF1: {:.4f}\tPrecision: {:.4f}\tRecall: {:.4f}\tSpecificity: {:.4f}\tAUC: {:.4f}\tAccuracy: {:4f}'.format(name, f1, precision, recall, specificity, roc_auc, acc.item()))
         return records 
     
-    def check_gradient(self, dataset=None):
-        self.model.train()
-        # self.model.eval()
-        grad_sum = torch.Tensor().to(self.device)
-        for x, y, id_line in self.dataloaders['test']:
-            # print(x.shape)
-            # print(y.shape)
-            x = x.to(self.device)
-            y = y.to(self.device)
-            x.requires_grad = True
-            self.optimizer.zero_grad()
-            prd_y = self.model(x)
-            prd_y = torch.squeeze(prd_y)
-            loss = self.criterion(prd_y, y)
-            loss.backward()
-            # batch_grad_sum = torch.sum(x.grad, dim=0)
-            batch_grad_sum = x.grad
-            torch.set_printoptions(profile="full")
-            print(batch_grad_sum.shape)
-            print(batch_grad_sum)
-            print(x.grad.shape)
-            print('<><><><><><><>')
-
 
     def evaluate(self, dataset='test'):
         self.model.eval()
@@ -226,7 +164,6 @@ class AluPrdEAD(object):
                         loss = self.criterion(prd_y, y)
                         display_loss_bce[phase] += loss
                         l1_lambda, l2_lambda = 1e-3, 1e-2
-                        l1_lambda, l2_lambda = 1e-3, 0
                         l1_norm = sum(p.abs().sum() for p in self.model.parameters())
                         l2_norm = sum(p.pow(2.0).sum() for p in self.model.parameters())
                         loss = loss + l1_norm * l1_lambda + l2_norm * l2_lambda
@@ -266,25 +203,6 @@ class AluPrdEAD(object):
             for evaluation_metric in ['F1', 'Precision', 'Recall', 'Specificity', 'AUC', 'Accuracy']:
                 self.tb_val_writer.add_scalar(evaluation_metric, records_dict['val'][f'{evaluation_metric}_val'], epoch)
                 self.tb_test_writer.add_scalar(evaluation_metric, records_dict['test'][f'{evaluation_metric}_test'], epoch)
-            # run infer
-            if run_mode == 2:
-                record_loss = {}
-                for k, v in display_loss_bce.items():
-                    record_loss[k + '_loss'] = v.item()
-                perf_results.append(records_dict['train2'] | records_dict['val'] | records_dict['test'] | records_dict['precision_recall'] | record_loss)
-                # print(perf_results)
-                continue    
-                prd_y_infer, y_infer, id_line_infer = self.evaluate('infer')
-                prd_y_infer = prd_y_infer.tolist()
-                y_infer = y_infer.tolist()
-                assert(len(prd_y_infer) == len(id_line_infer) == len(y_infer))
-                prd_file = work_dir + '/prd_y.txt'
-                with open(prd_file, 'w') as write_fh:
-                    for i in range(len(id_line_infer)):
-                        write_fh.write(f'{prd_y_infer[i]}\t{y_infer[i]}\t{id_line_infer[i]}' + '\n')
-                infer_records = draw('infer', epoch, dataset=infer_set, work_dir=work_dir,log_fh=None)
-                perf_results.append(records_dict['val'] | records_dict['test'] | infer_records)
-            # else:
             print('')
         # write to csv
         import csv 

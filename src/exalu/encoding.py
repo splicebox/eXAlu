@@ -38,6 +38,3 @@ def seq_encoding_onehot_padN(seq, max_len):
 def seq_encoding_onehot(seq):
     matrix = [base_dict[base] for base in seq]
     return torch.tensor(matrix).T 
-
-if __name__ == "__main__":
-    pass
