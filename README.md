@@ -132,8 +132,6 @@ optional arguments:
   -h, --help   show this help message and exit
 ```
 
-**NOTE** that *the BED file input* must contain the coordinates of the *Alu* sequence alone, whereas *the FASTA file input* must include sequences of the *Alu* and the surrounding 350 bp flanking regions.
-
 To input a BED file:
 ```
 usage: run_mutagenesis.py bed [-h] -t TYPE [-k K_BP_DELETION_LIST] [-p] -b ALU_BED_FILE -r REF_GENOME_FILE -m MODEL_WEIGHTS_FILE -o OUTPUT_DIR [--yaxis Y_AXIS_MODE] [--no-alu-boundaries]
@@ -171,12 +169,18 @@ optional arguments:
   --no-alu-boundaries   Do not draw Alu boundaries (grey vertical dashed lines) on plot
 ```
 
-**NOTE** that the current version of the program requires the following standard format for the FASTA header lines. This information is also plotted on the generated PNG images.
+The *output images* are created in OUTPUT_DIR/imgs/, the text files with the ** data in OUTPUT_DIR/tables/, and the *peak* files in OUTPUT_DIR/peaks/ .
+
+####Input/Output#### 
+
+1. Note that *the BED file input* must contain the coordinates of the *Alu* sequence alone, whereas *the FASTA file input* must include sequences of the *Alu* and the surrounding 350 bp flanking regions. 
+
+2. The current version of the program requires the following *standard format* for the FASTA header lines. This information is also plotted on the generated PNG images.
 
 ```
 >ANY_INFO::ANY_CHR:START-END(ANY_STRAND)
 ```
-Where:
+where:
 - `ANY_INFO`: Identifier or additional details.
 - `ANY_CHR`: Chromosome name.
 - `START` and `END`: Genomic coordinates (ensure `END - START` equals the length of the *Alu* element).
@@ -184,9 +188,7 @@ Where:
 
 Example: `>h38_mk_AluJb::chr19:1517005-1518036(-)`. A placeholder, such as `>NONE::chr1:0-0(.)`, can be used if the location data is not available.
 
-The *output images* are created in OUTPUT_DIR/imgs/, the text files with the ** data in OUTPUT_DIR/tables/, and the *peak* files in OUTPUT_DIR/peaks/ .
-
-**Alu* boundaries marking.* For 'bed' type inputs, the program automatically marks the *Alu* boundaries using coordinates from the ALU_BED_FILE. For 'fasta' type inputs, it marks the endpoints of the 350 bp flanking regions. Use the `--no-alu-boundaries` option if you do not want the boundaries marked.
+3. 
 
 #### Example
 Below is an example showing how to plot the mutagenesis graphs given a BED or FASTA file input:
