@@ -171,7 +171,7 @@ optional arguments:
 
 The *output images* are created in OUTPUT_DIR/imgs/, the text files with the ** data in OUTPUT_DIR/tables/, and the *peak* files in OUTPUT_DIR/peaks/ .
 
-####Input/Output#### 
+#### Input/Output 
 
 1. Note that *the BED file input* must contain the coordinates of the *Alu* sequence alone, whereas *the FASTA file input* must include sequences of the *Alu* and the surrounding 350 bp flanking regions. 
 
@@ -188,7 +188,7 @@ where:
 
 Example: `>h38_mk_AluJb::chr19:1517005-1518036(-)`. A placeholder, such as `>NONE::chr1:0-0(.)`, can be used if the location data is not available.
 
-3. 
+3. **Alu* boundaries marking.* For BED file inputs, the program automatically marks the *Alu* boundaries using coordinates from the ALU_BED_FILE. For FASTA file inputs, it marks the endpoints of the 350 bp flanking regions. Using the `--no-alu-boundaries` option will leave the boundaries unmarked.
 
 #### Example
 Below is an example showing how to plot the mutagenesis graphs given a BED or FASTA file input:
