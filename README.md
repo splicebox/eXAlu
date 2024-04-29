@@ -173,7 +173,7 @@ The *output images* are created in OUTPUT_DIR/imgs/, the text files with the ** 
 
 #### Input/Output 
 
-1. Note that *the BED file input* must contain the coordinates of the *Alu* sequence alone, whereas *the FASTA file input* must include sequences of the *Alu* and the surrounding 350 bp flanking regions. 
+1. Note that *the BED file input* must contain the coordinates of the *Alu* sequence, without flanks, whereas *the FASTA file input* must include sequences of the *Alu* and the surrounding 350 bp regions. 
 
 2. The current version of the program requires the following *standard format* for the FASTA header lines. This information is also plotted on the generated PNG images.
 
