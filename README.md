@@ -3,7 +3,7 @@ A Deep Learning model to predict *Alu* exonization events in the human genome ba
 
 Described in:
 
-He Z, Chen O, Phillips N, Lui WW, Pasquesi GIM, Sabunciyan S, Florea L (2024). Predicting *Alu* exonization in the human genome with a deep learning model, [*bioRxiv*](https://www.biorxiv.org/content/10.1101/2024.01.03.574099v1) **doi:** https://doi.org/10.1101/2024.01.03.574099. *Submitted.* [[Supporting data](http://ccb.jhu.edu/software/eXAlu/)]
+He Z, Lui WW, Chen O, Phillips N, Pasquesi GIM, Sabunciyan S, Florea L (2024). Predicting *Alu* exonization in the human genome with a deep learning model, [*bioRxiv*](https://www.biorxiv.org/content/10.1101/2024.01.03.574099v1) **doi:** https://doi.org/10.1101/2024.01.03.574099. *Submitted.* [[Supporting data](http://ccb.jhu.edu/software/eXAlu/)]
 
 ```
 Copyright (C) 2022-2024, and GNU GPL v3.0, by Zitong He, Liliana Florea
