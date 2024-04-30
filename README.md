@@ -186,7 +186,7 @@ where:
 - `START` and `END`: Genomic coordinates (ensure `END - START` equals the length of the *Alu* element).
 - `ANY_STRAND`: DNA strand (`+` for forward, `-` for reverse).
 
-Example: `>h38_mk_AluJb::chr19:1517005-1518036(-)`. A placeholder, such as `>NONE::chr1:0-0(.)`, can be used if the location data is not available.
+Example: `>h38_mk_AluJb::chr19:1517005-1518036(-)`. A placeholder, such as `>localID::chr1:0-1200(.)`, can be used if the location data is not available, with the following requirements: *i)* the (full) header is a unique identifier for the sequence in the FASTA file; *ii)* 'localID' must not contain '::'; *iii)* currently, a chromosome name is required for the region (e.g., 'chr1'); and *iv)* the length of the region, such as 1200-0 (=1200), must be equal to the actual length of the sequence. 
 
 3. **Alu* boundaries marking.* For BED file inputs, the program automatically marks the *Alu* boundaries using coordinates from the ALU_BED_FILE. For FASTA file inputs, it marks the endpoints of the 350 bp flanking regions. Using the `--no-alu-boundaries` option will leave the boundaries unmarked.
 
