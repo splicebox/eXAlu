@@ -48,8 +48,8 @@ conda activate alu_env
 ```
 conda install pytorch torchvision cudatoolkit=11.3 -c pytorch
 conda install scikit-learn tensorboard matplotlib -c conda-forge
-conda install pybedtools -c bioconda
-conda install seaborn -c anaconda
+pip install torch torchvision torchaudio 
+pip install pybedtools
 ```
 3. To install eXAlu in developing mode, enter the project root directory, then: 
 ```
