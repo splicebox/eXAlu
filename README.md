@@ -46,7 +46,6 @@ conda activate alu_env
 ```
 2. Install PyTorch, scikit-learn, tensorboard, matplotlib, pybedtools, seaborn:
 ```
-conda install pytorch torchvision cudatoolkit=11.3 -c pytorch
 conda install scikit-learn tensorboard matplotlib -c conda-forge
 pip install torch torchvision torchaudio 
 pip install pybedtools
