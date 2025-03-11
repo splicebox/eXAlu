@@ -27,9 +27,7 @@ class AluPrdEAD(object):
         if model_name == 'cnet':
             self.model = CNet_v10_5(self.batch_size)
         self.model = self.model.to(self.device)
-        self.warmup_epoch_th = 15
-        self.optimizer_warmup = torch.optim.Adam(self.model.parameters(), lr=lr, betas=(0.9, 0.999), weight_decay=0.01)
-        self.optimizer_main = torch.optim.SGD(self.model.parameters(), lr=lr)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=lr, betas=(0.9, 0.999), weight_decay=0.01)
         print(self.model)
         if run_mode in [1, 3, 4, 5, 6, 8]:
             # mode 1: infer (with label) pair with mode 0
@@ -94,7 +92,6 @@ class AluPrdEAD(object):
         print('{}\tF1: {:.4f}\tPrecision: {:.4f}\tRecall: {:.4f}\tSpecificity: {:.4f}\tAUC: {:.4f}\tAccuracy: {:4f}'.format(name, f1, precision, recall, specificity, roc_auc, acc.item()))
         return records 
     
-
     def evaluate(self, dataset='test'):
         self.model.eval()
         prd_y_test = torch.Tensor().to(self.device)
@@ -105,8 +102,7 @@ class AluPrdEAD(object):
             y_test = torch.cat((y_test, y), dim=0)
             x = x.to(self.device)
             with torch.set_grad_enabled(False):
-                self.optimizer_warmup.zero_grad()
-                # self.optimizer_main.zero_grad()
+                self.optimizer.zero_grad()
                 prd_y = self.model(x)
                 if prd_y.shape[0] > 1:
                     prd_y = torch.squeeze(prd_y)
@@ -120,24 +116,15 @@ class AluPrdEAD(object):
         since = time.time()
         best_model_wts = deepcopy(self.model.state_dict())
         best_stat = 0.0
-        best_records = None
         perf_results = []
         for epoch in range(1, self.num_epochs + 1):
-            if epoch <= self.warmup_epoch_th:
-                self.optimizer = self.optimizer_warmup
-            else:
-                self.optimizer = self.optimizer_warmup
             print('Epoch {}/{}\tlr: {}'.format(epoch, self.num_epochs, self.optimizer.param_groups[0]['lr']))
             print('-' * 15)
             records_dict = {}
             prd_y_dict = {}
             y_dict = {}
-            # prd_y_val = torch.Tensor().to(self.device)
-            # y_val = torch.Tensor().to(self.device)
             display_loss_bce = defaultdict(float)
             display_loss_all = defaultdict(float)
-            # train_loss = 0.0
-            # val_loss = 0.0
             for phase in ['train', 'train2', 'val', 'test']:
                 prd_y_dict[phase] = torch.Tensor()
                 y_dict[phase] = torch.Tensor()
@@ -149,13 +136,8 @@ class AluPrdEAD(object):
                 # for x, y, id_line, ss_str, ss_score, l in self.dataloaders[phase]:
                 for x, y, id_line in self.dataloaders[phase]:
                     step_count += 1
-                    # print(x.shape)
-                    # print(y.shape)
                     x = x.to(self.device)
                     y = y.to(self.device)
-                    # ss_str = ss_str.to(self.device)
-                    # ss_score = ss_score.to(self.device, dtype=float)
-                    # l = l.to(self.device)
                     self.optimizer.zero_grad()
                     with torch.set_grad_enabled(phase == 'train'):
                         # prd_y = self.model(x, ss_str, ss_score, l)
@@ -163,10 +145,9 @@ class AluPrdEAD(object):
                         prd_y = torch.squeeze(prd_y)
                         loss = self.criterion(prd_y, y)
                         display_loss_bce[phase] += loss
-                        l1_lambda, l2_lambda = 1e-3, 1e-2
+                        l1_lambda = 1e-3
                         l1_norm = sum(p.abs().sum() for p in self.model.parameters())
-                        l2_norm = sum(p.pow(2.0).sum() for p in self.model.parameters())
-                        loss = loss + l1_norm * l1_lambda + l2_norm * l2_lambda
+                        loss = loss + l1_norm * l1_lambda 
                         display_loss_all[phase] += loss
                         if phase == 'train':
                             loss.backward()
