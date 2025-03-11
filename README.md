@@ -3,7 +3,7 @@ A Deep Learning model to predict *Alu* exonization events in the human genome ba
 
 Described in:
 
-He Z, Chen O, Phillips N, Lui WW, Pasquesi GIM, Sabunciyan S, Florea L (2024). Predicting *Alu* exonization in the human genome with a deep learning model, [*bioRxiv*](https://www.biorxiv.org/content/10.1101/2024.01.03.574099v1) **doi:** https://doi.org/10.1101/2024.01.03.574099. *Submitted.* [[Supporting data](http://ccb.jhu.edu/software/eXAlu/)]
+He Z, Lui WW, Chen O, Phillips N, Pasquesi GIM, Sabunciyan S, Florea L (2024). Predicting *Alu* exonization in the human genome with a deep learning model, [*bioRxiv*](https://www.biorxiv.org/content/10.1101/2024.01.03.574099v1) **doi:** https://doi.org/10.1101/2024.01.03.574099. *Submitted.* [[Supporting data](http://ccb.jhu.edu/software/eXAlu/)]
 
 ```
 Copyright (C) 2022-2024, and GNU GPL v3.0, by Zitong He, Liliana Florea
@@ -28,11 +28,11 @@ eXAlu is a Convolutional Neural Network (CNN) model that predicts the likelihood
 <a name="transcript_alu"></a>
 <p align="center"><a name="transcript_alu"> </a><img title="Alu exonization" src="images/transcript_alu.png" width=55%></p>
 
-The model takes as input a set of *Alu* elements surrounded by 350 bp sequence context and outputs the probability for each *Alu* to undergo exonization. The model's network has six convolutional layers, batch-norm layers and pooling layers, followed by fully-connected layers that map the features extracted by the convolutional layers to the output probabilities. The output is a probability score labeled as follows: the *Alu* is deemed ‘exonized’ iff (score>=0.5). eXAlu was trained on human *Alu* sequences extracted from the RNA-seq data in 28 human tissues represented in the GTEx repository. Briefly, RNA-seq reads were aligned to the human genome with [STAR](https://github.com/alexdobin/STAR) and assembled into transcripts with [CLASS2](https://sourceforge.net/p/splicebox/wiki/CLASS/), then internal exons overlapping *Alu* annotations in antisense to the gene were extracted as *Alu* exons.
+The model takes as input an *Alu* element surrounded by 350 bp sequence context and outputs the probability for the *Alu* to undergo exonization. The model's network has six convolutional layers, batch-norm layers and pooling layers, followed by fully-connected layers that map the features extracted by the convolutional layers to the output probabilities. The output is a probability score labeled as follows: the *Alu* is deemed ‘exonized’ iff (score>=0.5). eXAlu was trained on human *Alu* sequences extracted from the RNA-seq data in 28 human tissues represented in the GTEx repository. Briefly, RNA-seq reads were aligned to the human genome with [STAR](https://github.com/alexdobin/STAR) and assembled into transcripts with [CLASS2](https://sourceforge.net/p/splicebox/wiki/CLASS/), then internal exons overlapping *Alu* annotations in antisense to the gene were extracted as *Alu* exons.
 
 <!-- ![model_network](images/model_network.png) -->
 
-This repository provides *inference* and *mutagenesis plotting* functions. The *inference* module implements the prediction function. The *mutagenesis* module produces graphs showing the difference in the model's score when mutating the input sequence, either single nucleotide changes or block deletions. Upon user request, graphs are annotated with peaks, which point to features important for recognition and the exonization process, such as splicing regulatory signals. Negative peaks mark changes in the local sequence context that reduce the probability of exonization, and positive peaks mark changes leading to an increased probability.  
+This repository provides *inference* and *mutagenesis plotting* functions. The *inference* module implements the prediction function. The *mutagenesis* module produces graphs showing the difference in the model's score when mutating the input sequence, either single nucleotide changes or block deletions. Upon user request, graphs are annotated with peaks, which point to features important for recognition and potentially for the exonization process, such as splicing regulatory signals. Negative peaks mark changes in the local sequence that reduce the likelihood of exonization, and positive peaks mark changes leading to an increased probability.  
 
 ## <a name="installation"></a> Installation
 eXAlu is compatible with Linux (tested), Windows and MacOS. It requires Python 3.9+, CUDA 11.2+, and PyTorch 1.10+.
@@ -114,7 +114,7 @@ python run_eXAlu.py fasta -f example_alu.fa -m ../models/model_weights.pt -o ./d
 ```
 
 ### <a name="mutagenesis"></a> Mutagenesis
-The *mutagenesis* module generates plots showing the effects that sequence mutations have on the model's prediction, along with annotations of peaks and, optionally, landmarks such as exon and repeat boundaries. It supports two types of mutations: single nucleotide changes and small block deletions (k=1..30 bp). For single nucleotide changes, within an *Alu* sequence and its 350 bp surrounding context regions, it mutates each base into each of the three alternate bases, plotting the difference in scores between the mutated and original sequences. For k bp block deletions, it deletes the k bp segment starting at that position. Annotations of exon boundaries, if specified, are marked with red vertical bars, and *Alu* boundaries are shown with black vertical bars (see [figure](#mutagenesis_plot)). Lastly, positive and negative peaks are determined with a sliding window algorithm and marked with horizontal bars along the sequence interval. Note that the peak detection algorithms have been calibrated for single base substitutions and small deletions (k<=20 bp) and may not be suitable for larger blocks.
+The *mutagenesis* module generates plots showing the effects that sequence mutations have on the model's prediction, along with annotations of peaks and landmarks such as exon and repeat boundaries. It supports two types of mutations: single nucleotide changes and small block deletions (k=1..30 bp). For single nucleotide changes, within an *Alu* sequence and its 350 bp surrounding regions, it mutates each base into each of the three alternate bases, plotting the difference in scores between the mutated and original sequences. For k bp block deletions, it deletes the k bp segment starting at that position. Annotations of exon boundaries, if specified, are marked with red vertical bars, and *Alu* boundaries are shown with black vertical bars (see [figure](#mutagenesis_plot)). Lastly, positive and negative peaks are determined with a sliding window algorithm and marked with horizontal bars along the sequence interval. Note that the peak detection algorithms have been calibrated for single base substitutions and small deletions (k<=15 bp) and may not be suitable for larger blocks.
 
 <a name="mutagenesis_plot"></a>
 <p align="center"><a name="mutagenesis_plot"> </a><img title="Mutagenesis plot" src="images/mut_plot_deletion_chr1_3866243_3866547_-.png" width=95%></p>
@@ -131,11 +131,6 @@ positional arguments:
 optional arguments:
   -h, --help   show this help message and exit
 ```
-
-**Input File Differences:**
-
-- **BED File**: Contains only the coordinates of the *Alu* sequences.
-- **FASTA File**: Includes both the *Alu* sequences and 350 bp contextual regions around them.
 
 To input a BED file:
 ```
@@ -174,25 +169,26 @@ optional arguments:
   --no-alu-boundaries   Do not draw Alu boundaries (grey vertical dashed lines) on plot
 ```
 
-**FASTA File Formatting:**
-Since we need the formatted description lines (start with ">") to label the sequences and plot text information within the output images, you may want to format the description lines in the FASTA input file as shown below:
+The *output images* are created in OUTPUT_DIR/imgs/, the text files with the ** data in OUTPUT_DIR/tables/, and the *peak* files in OUTPUT_DIR/peaks/ .
+
+#### Input/Output 
+
+1. Note that *the BED file input* must contain the coordinates of the *Alu* sequence, without flanks, whereas *the FASTA file input* must include sequences of the *Alu* and the surrounding 350 bp regions. 
+
+2. The current version of the program requires the following *standard format* for the FASTA header lines. This information is also plotted on the generated PNG images.
+
 ```
 >ANY_INFO::ANY_CHR:START-END(ANY_STRAND)
 ```
-Where:
+where:
 - `ANY_INFO`: Identifier or additional details.
 - `ANY_CHR`: Chromosome name.
-- `START` and `END`: Genomic coordinates (ensure `END - START` equals the length of the Alu element).
+- `START` and `END`: Genomic coordinates (ensure `END - START` equals the length of the *Alu* element).
 - `ANY_STRAND`: DNA strand (`+` for forward, `-` for reverse).
-- Example: `>h38_mk_AluJb::chr19:1517005-1518036(-)`
 
-The output images are created in OUTPUT_DIR/imgs/, the text files with the score change data in OUTPUT_DIR/tables/, and the peak files in OUTPUT_DIR/peaks/
+Example: `>h38_mk_AluJb::chr19:1517005-1518036(-)`. A placeholder, such as `>localID::chr1:0-1200(.)`, can be used if the location data is not available, with the following requirements: *i)* the (full) header is a unique identifier for the sequence in the FASTA file; *ii)* 'localID' must not contain '::'; *iii)* currently, a chromosome name is required for the region (e.g., 'chr1'); and *iv)* the length of the region, such as 1200-0 (=1200), must be equal to the actual length of the sequence. 
 
-***Alu* Boundaries Marking:**
-
-- For 'bed' type inputs, the program automatically marks the *Alu* boundaries using coordinates from the ALU_BED_FILE.
-- For 'fasta' type inputs, it marks the endpoints of the 350 bp flanking regions.
-- Use the `--no-alu-boundaries` option if you do not want the boundaries marked.
+3. **Alu* boundaries marking.* For BED file inputs, the program automatically marks the *Alu* boundaries using coordinates from the ALU_BED_FILE. For FASTA file inputs, it marks the endpoints of the 350 bp flanking regions. Using the `--no-alu-boundaries` option will leave the boundaries unmarked.
 
 #### Example
 Below is an example showing how to plot the mutagenesis graphs given a BED or FASTA file input:
