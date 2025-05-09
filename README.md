@@ -96,9 +96,9 @@ optional arguments:
 #### Output
 The output is formatted as follows:
 ```
-0.022445248439908028    3.0     h38_mk_AluY::chr1:8387956-8388978(-)
-0.08658777922391891     3.0     h38_mk_AluSc::chr1:33553826-33554843(-)
-0.006004853639751673    3.0     h38_mk_AluY::chr1:41942535-41943565(-)
+0.02244282141327858     3.0     h38_mk_AluY::chr1:8387956-8388978(-)
+0.08659758418798447     3.0     h38_mk_AluSc::chr1:33553826-33554843(-)
+0.006007341668009758    3.0     h38_mk_AluY::chr1:41942535-41943565(-)
 ```
 where column 1 is the predicted eXAlu score, column 2 is a placeholder, and column 3 describes the *Alu* element, including *Alu* name, index in the file and location and strand on the genome.
 
