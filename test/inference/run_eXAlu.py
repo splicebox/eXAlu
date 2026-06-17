@@ -6,6 +6,14 @@ import argparse
 import os
 
 
+# the bundled model weights, selected by --mode (default: antisense)
+MODELS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'models')
+BUNDLED_WEIGHTS = {
+    'sense': os.path.join(MODELS_DIR, 'model_weights_sense.pt'),
+    'antisense': os.path.join(MODELS_DIR, 'model_weights_antisense.pt'),
+}
+
+
 def get_arguments():
     parser = argparse.ArgumentParser()
 
@@ -17,16 +25,22 @@ def get_arguments():
                             type=str, required=True, help='the input Alu bed file')
     parser_bed.add_argument('-r', metavar='REF_GENOME_FILE', type=str,
                             required=True, help='the reference genome file')
+    parser_bed.add_argument('-s', '--mode', metavar='STRAND_MODE', dest='mode',
+                            type=str, choices=['sense', 'antisense'], default='antisense',
+                            help="select the bundled model: 'sense' or 'antisense' (default: antisense); ignored when -m is given")
     parser_bed.add_argument('-m', metavar='MODEL_WEIGHTS_FILE',
-                            type=str, required=True, help='the trained model weights file')
+                            type=str, default=None, help='the trained model weights file; overrides --mode')
     parser_bed.add_argument('-o', metavar='OUTPUT_DIR', type=str, required=True,
                             help='the directory contains temp files and final output file')
 
     parser_fa = subparsers.add_parser('fasta', help='infer with fasta file')
     parser_fa.add_argument('-f', metavar='ALU_FASTA_FILE',
                            type=str, required=True, help='the input Alu fa file')
+    parser_fa.add_argument('-s', '--mode', metavar='STRAND_MODE', dest='mode',
+                           type=str, choices=['sense', 'antisense'], default='antisense',
+                           help="select the bundled model: 'sense' or 'antisense' (default: antisense); ignored when -m is given")
     parser_fa.add_argument('-m', metavar='MODEL_WEIGHTS_FILE',
-                           type=str, required=True, help='the trained model weights file')
+                           type=str, default=None, help='the trained model weights file; overrides --mode')
     parser_fa.add_argument('-o', metavar='OUTPUT_DIR', type=str, default='./out',
                            help='the directory contains temp files and final output file, default ./out')
 
@@ -35,6 +49,17 @@ def get_arguments():
         sys.exit(1)
 
     return parser.parse_args()
+
+
+def resolve_model_weights(model_weights_file, mode):
+    '''Use -m if given, otherwise the bundled weights selected by --mode.'''
+    if model_weights_file:
+        return model_weights_file
+    weights = BUNDLED_WEIGHTS[mode]
+    if not os.path.exists(weights):
+        sys.exit(f'bundled {mode} model weights not found: {weights}')
+    print(f'using bundled {mode} model weights: {weights}')
+    return weights
 
 
 def infer(model_weights_file, output_dir, alu_bed_file=None, ref_genome_file=None, alu_fa_file=None):
@@ -62,8 +87,9 @@ def infer(model_weights_file, output_dir, alu_bed_file=None, ref_genome_file=Non
 
 if __name__ == "__main__":
     args = get_arguments()
+    model_weights_file = resolve_model_weights(args.m, args.mode)
     if args.input_mode == 'bed':
-        infer(model_weights_file=args.m, output_dir=args.o,
+        infer(model_weights_file=model_weights_file, output_dir=args.o,
               alu_bed_file=args.b, ref_genome_file=args.r)
     if args.input_mode == 'fasta':
-        infer(model_weights_file=args.m, output_dir=args.o, alu_fa_file=args.f)
+        infer(model_weights_file=model_weights_file, output_dir=args.o, alu_fa_file=args.f)

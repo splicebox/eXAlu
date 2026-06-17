@@ -160,6 +160,9 @@ cython_debug/
 #.idea/
 
 # project related
+CLAUDE.md
+CLAUDE.local.md
+.claude/
 __pycache__/
 .gitignore
 /example_code/

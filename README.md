@@ -71,26 +71,32 @@ optional arguments:
   -h, --help   show this help message and exit
 ```
 
+eXAlu ships two trained models: an **antisense** model (the default, for *Alu* elements in antisense to the gene) and a **sense** model. Select one with `-s/--mode`, or supply your own weights with `-m` (which overrides `--mode`).
+
 To input a BED file:
 ```
-usage: run_eXAlu.py bed [-h] -b ALU_BED_FILE -r REF_GENOME_FILE -m MODEL_WEIGHTS_FILE -o OUTPUT_DIR
+usage: run_eXAlu.py bed [-h] -b ALU_BED_FILE -r REF_GENOME_FILE [-s STRAND_MODE] [-m MODEL_WEIGHTS_FILE] -o OUTPUT_DIR
 
 optional arguments:
   -h, --help            show this help message and exit
   -b ALU_BED_FILE       the input Alu bed file
   -r REF_GENOME_FILE    the reference genome file
+  -s, --mode STRAND_MODE
+                        select the bundled model: 'sense' or 'antisense' (default: antisense); ignored when -m is given
   -m MODEL_WEIGHTS_FILE
-                        the trained model weights file
+                        the trained model weights file; overrides --mode
   -o OUTPUT_DIR         the directory contains temp files and final output file
 ```
 
 To input a FASTA file:
 ```
-python run_eXAlu.py fasta -f ALU_FASTA_FILE -m MODEL_WEIGHTS_FILE -o OUTPUT_DIR
+python run_eXAlu.py fasta -f ALU_FASTA_FILE [-s STRAND_MODE] [-m MODEL_WEIGHTS_FILE] -o OUTPUT_DIR
 
 optional arguments:
   -f ALU_FASTA_FILE     the input Alu fasta file
-  -m MODEL_WEIGHTS_FILE the trained model weights file
+  -s, --mode STRAND_MODE
+                        select the bundled model: 'sense' or 'antisense' (default: antisense); ignored when -m is given
+  -m MODEL_WEIGHTS_FILE the trained model weights file; overrides --mode
   -o OUTPUT_DIR         the directory containing temp files and final output file, default ./out
 ```
 #### Output
@@ -108,8 +114,14 @@ Below is an example showing inference for a small *Alu* BED file using the train
 ```
 conda activate alu_env
 cd test/inference
-python run_eXAlu.py bed -b example_alu.bed -r REF_GENOME_FILE -m ../models/model_weights.pt -o ./demo_out
-python run_eXAlu.py fasta -f example_alu.fa -m ../models/model_weights.pt -o ./demo_out
+# antisense model (default)
+python run_eXAlu.py bed -b example_alu.bed -r REF_GENOME_FILE -o ./demo_out
+python run_eXAlu.py fasta -f example_alu.fa -o ./demo_out
+# sense model
+python run_eXAlu.py bed -s sense -b example_alu.bed -r REF_GENOME_FILE -o ./demo_out
+python run_eXAlu.py fasta -s sense -f example_alu.fa -o ./demo_out
+# or supply your own weights explicitly with -m
+python run_eXAlu.py bed -b example_alu.bed -r REF_GENOME_FILE -m ../models/model_weights_antisense.pt -o ./demo_out
 ```
 
 ### <a name="mutagenesis"></a> Mutagenesis
@@ -194,10 +206,10 @@ Below is an example showing how to plot the mutagenesis graphs given a BED or FA
 ```
 conda activate alu_env
 cd test/analysis/mutagenesis
-python run_mutagenesis.py bed -t substitution -b ./example_alu.bed -r REF_GENOME_FILE -m ../../models/model_weights.pt -o ./demo_out --yaxis fixed
-python run_mutagenesis.py fasta -t substitution -f ./example_alu.fa -m ../../models/model_weights.pt -o ./demo_out --yaxis adaptive -p
-python run_mutagenesis.py bed -t deletion -k 5,10,15 -b ./example_alu.bed -r REF_GENOME_FILE -m ../../models/model_weights.pt -o ./demo_out --yaxis fixed -p
-python run_mutagenesis.py fasta -t deletion -k 1,6,11,16 -f ./example_alu.fa -m ../../models/model_weights.pt -o ./demo_out --yaxis fixed -p --no-alu-boundaries
+python run_mutagenesis.py bed -t substitution -b ./example_alu.bed -r REF_GENOME_FILE -m ../../models/model_weights_antisense.pt -o ./demo_out --yaxis fixed
+python run_mutagenesis.py fasta -t substitution -f ./example_alu.fa -m ../../models/model_weights_antisense.pt -o ./demo_out --yaxis adaptive -p
+python run_mutagenesis.py bed -t deletion -k 5,10,15 -b ./example_alu.bed -r REF_GENOME_FILE -m ../../models/model_weights_antisense.pt -o ./demo_out --yaxis fixed -p
+python run_mutagenesis.py fasta -t deletion -k 1,6,11,16 -f ./example_alu.fa -m ../../models/model_weights_antisense.pt -o ./demo_out --yaxis fixed -p --no-alu-boundaries
 ```
 
 ## <a name="support"></a> Support
