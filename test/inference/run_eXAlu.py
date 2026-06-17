@@ -25,7 +25,7 @@ def get_arguments():
                             type=str, required=True, help='the input Alu bed file')
     parser_bed.add_argument('-r', metavar='REF_GENOME_FILE', type=str,
                             required=True, help='the reference genome file')
-    parser_bed.add_argument('-s', '--mode', metavar='STRAND_MODE', dest='mode',
+    parser_bed.add_argument('--mode', metavar='STRAND_MODE', dest='mode',
                             type=str, choices=['sense', 'antisense'], default='antisense',
                             help="select the bundled model: 'sense' or 'antisense' (default: antisense); ignored when -m is given")
     parser_bed.add_argument('-m', metavar='MODEL_WEIGHTS_FILE',
@@ -36,7 +36,7 @@ def get_arguments():
     parser_fa = subparsers.add_parser('fasta', help='infer with fasta file')
     parser_fa.add_argument('-f', metavar='ALU_FASTA_FILE',
                            type=str, required=True, help='the input Alu fa file')
-    parser_fa.add_argument('-s', '--mode', metavar='STRAND_MODE', dest='mode',
+    parser_fa.add_argument('--mode', metavar='STRAND_MODE', dest='mode',
                            type=str, choices=['sense', 'antisense'], default='antisense',
                            help="select the bundled model: 'sense' or 'antisense' (default: antisense); ignored when -m is given")
     parser_fa.add_argument('-m', metavar='MODEL_WEIGHTS_FILE',
