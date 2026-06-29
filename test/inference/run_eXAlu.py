@@ -70,7 +70,12 @@ def infer(model_weights_file, output_dir, alu_bed_file=None, ref_genome_file=Non
         ref_genome = pybedtools.example_filename(ref_genome_file)
         add_context(alu_bed_file, contexted_bed_file, 'bothfix', 350)
         alu_bed = pybedtools.BedTool(contexted_bed_file)
-        alu_bed.sequence(fi=ref_genome, fo=fa_file, name=True, s=True)
+        try:
+            alu_bed.sequence(fi=ref_genome, fo=fa_file, name=True, s=True)
+        except pybedtools.helpers.BEDToolsError as e:
+            print('Warning: bedtools reported intervals beyond contig bounds; '
+                  'skipping them and continuing.', file=sys.stderr)
+            print(e, file=sys.stderr)
     if alu_fa_file:
         fa_file = alu_fa_file
     run_ead(strand=True,

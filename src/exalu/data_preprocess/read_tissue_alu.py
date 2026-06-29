@@ -137,7 +137,10 @@ def add_context(src_bed_file, dst_bed_file, mode='none', single_side_pad_len=0, 
             print(mode)
             raise TypeError('wrong flank mode')
         if l < 0 or r < 0:
-            raise ValueError('split_context index out of control')
+            print(f'Warning: skipping {row[0]}:{row[1]}-{row[2]} '
+                  f'(extended interval {l}-{r} out of bounds at contig start)',
+                  file=sys.stderr)
+            continue
         writer.writerow([row[i - 1], str(l), str(r), \
                         row[3], row[4], row[j]])
     src_bed_fh.close()
